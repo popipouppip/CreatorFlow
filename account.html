@@ -18,7 +18,7 @@
       <a href="account.html"     class="nav-link active"><span class="nav-icon">👤</span> <span data-i18n="nav_account">Account</span></a>
     </nav>
     <div class="sidebar-bottom">
-      <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()">Улучшить</button>
+      <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()" style="display:none">Улучшить</button>
       <div class="user-info">
         <span class="user-email" id="user-email">—</span>
         <button class="logout-btn" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>

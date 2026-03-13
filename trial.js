@@ -24,7 +24,7 @@ async function ensureTrialStarted(uid, userData) {
 function applyTrialUI(status) {
   _cfPlan = status.plan || 'free';
   const btn = document.getElementById('upgrade-btn');
-  if (btn) btn.style.display = (status.plan && status.plan !== 'free') ? 'none' : '';
+  if (btn) btn.style.display = (_cfPlan === 'free') ? '' : 'none';
 
   if (status.access && status.trial) {
     const el = document.getElementById('trial-banner');

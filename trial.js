@@ -67,7 +67,8 @@ function applyTrialUI(status) {
     document.querySelector('.sidebar-bottom')?.prepend(demoBar);
   }
   if (isDemoMode()) {
-    demoBar.innerHTML = '<div class="demo-bar">🧪 Demo Mode <button class="btn btn-ghost btn-sm" onclick="exitDemoMode()" style="margin-left:8px;font-size:11px;padding:2px 8px">Exit</button></div>';
+    demoBar.innerHTML = '<div class="demo-bar"><i data-lucide="flask-conical" style="width:14px;height:14px;margin-right:6px"></i>Demo Mode <button class="btn btn-ghost btn-sm" onclick="exitDemoMode()" style="margin-left:8px;font-size:11px;padding:2px 8px">Exit</button></div>';
+    if (window.lucide) lucide.createIcons({ nodes: [demoBar] });
   } else {
     demoBar.innerHTML = '';
   }

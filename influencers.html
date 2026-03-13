@@ -12,10 +12,10 @@
   <aside class="sidebar">
     <div class="sidebar-logo">Creator<span>Flow</span></div>
     <nav class="sidebar-nav">
-      <a href="dashboard.html"   class="nav-link"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
-      <a href="influencers.html" class="nav-link active"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
-      <a href="analytics.html"   class="nav-link"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
-      <a href="account.html"     class="nav-link"><span class="nav-icon">👤</span> <span data-i18n="nav_account">Account</span></a>
+      <a href="dashboard.html"   class="nav-link"><i data-lucide="layout-dashboard" class="nav-icon"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link active"><i data-lucide="users" class="nav-icon"></i> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><i data-lucide="bar-chart-2" class="nav-icon"></i> <span data-i18n="nav_analytics">Analytics</span></a>
+      <a href="account.html"     class="nav-link"><i data-lucide="user" class="nav-icon"></i> <span data-i18n="nav_account">Account</span></a>
     </nav>
     <div class="sidebar-bottom">
       <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()" style="display:none">Улучшить</button>
@@ -37,7 +37,7 @@
         <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
       <button class="btn btn-primary" data-i18n="btn_add_influencer" onclick="openAdd()">+ Add Influencer</button>
     </div>
 
@@ -84,7 +84,7 @@
               </tr>
             </thead>
             <tbody id="influencers-tbody">
-              <tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><h3 data-i18n="no_influencers">No influencers yet</h3><p data-i18n="no_influencers_sub">Add your first influencer to build your database</p></div></td></tr>
+              <tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><h3 data-i18n="no_influencers">No influencers yet</h3><p data-i18n="no_influencers_sub">Add your first influencer to build your database</p></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -228,7 +228,7 @@
 
     const tbody = document.getElementById('influencers-tbody');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><h3>' + t('no_inf_found') + '</h3><p>' + t('no_inf_found_sub') + '</p></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><h3>' + t('no_inf_found') + '</h3><p>' + t('no_inf_found_sub') + '</p></div></td></tr>';
       return;
     }
 
@@ -246,6 +246,7 @@
         '</div></td>' +
       '</tr>'
     ).join('');
+    if (window.lucide) lucide.createIcons();
   }
 
   function openAdd() {
@@ -337,5 +338,6 @@
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'influencers.csv'; a.click();
   }
 </script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>

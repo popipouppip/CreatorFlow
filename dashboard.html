@@ -12,10 +12,10 @@
   <aside class="sidebar">
     <div class="sidebar-logo">Creator<span>Flow</span></div>
     <nav class="sidebar-nav">
-      <a href="dashboard.html"   class="nav-link active"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
-      <a href="influencers.html" class="nav-link"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
-      <a href="analytics.html"   class="nav-link"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
-      <a href="account.html"     class="nav-link"><span class="nav-icon">👤</span> <span data-i18n="nav_account">Account</span></a>
+      <a href="dashboard.html"   class="nav-link active"><i data-lucide="layout-dashboard" class="nav-icon"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link"><i data-lucide="users" class="nav-icon"></i> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><i data-lucide="bar-chart-2" class="nav-icon"></i> <span data-i18n="nav_analytics">Analytics</span></a>
+      <a href="account.html"     class="nav-link"><i data-lucide="user" class="nav-icon"></i> <span data-i18n="nav_account">Account</span></a>
     </nav>
     <div class="sidebar-bottom">
       <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()" style="display:none">Улучшить</button>
@@ -37,8 +37,8 @@
         <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)">🧪 Demo Data</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
       <button class="btn btn-primary" data-i18n="dash_new_campaign" onclick="openNewCampaign()">+ New Campaign</button>
     </div>
 
@@ -72,7 +72,7 @@
         </div>
         <div id="campaigns-list">
           <div class="empty">
-            <div class="empty-icon">📋</div>
+            <div class="empty-icon"><i data-lucide="clipboard-list"></i></div>
             <h3 data-i18n="no_campaigns">No campaigns yet</h3>
             <p data-i18n="no_campaigns_sub">Create your first campaign to start tracking influencer deals</p>
           </div>
@@ -113,7 +113,7 @@
 
 <div class="success-overlay" id="success-overlay">
   <div class="success-box">
-    <div class="success-icon">🎉</div>
+    <div class="success-icon"><i data-lucide="party-popper" style="width:48px;height:48px;color:#6366f1"></i></div>
     <h2 class="success-title" id="success-title">You're all set!</h2>
     <p class="success-sub" id="success-sub">Your plan has been upgraded. Enjoy full access to CreatorFlow.</p>
     <button class="btn btn-primary" onclick="closeSuccessOverlay()">Continue →</button>
@@ -140,7 +140,7 @@
     if (justUpgraded) history.replaceState({}, '', 'dashboard.html');
 
     const demoBtn = document.getElementById('demo-toggle-btn');
-    if (demoBtn) demoBtn.textContent = isDemoMode() ? '🔴 Exit Demo' : '🧪 Demo Data';
+    if (demoBtn) demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons();
 
     db.collection('users').doc(user.uid).onSnapshot(snap => {
       const userData = snap.data() || {};
@@ -181,7 +181,7 @@
   function renderCampaigns(campaigns) {
     const el = document.getElementById('campaigns-list');
     if (!campaigns.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><h3>' + t('no_campaigns') + '</h3><p>' + t('no_campaigns_sub') + '</p></div>';
+      el.innerHTML = '<div class="empty"><div class="empty-icon"><i data-lucide="clipboard-list"></i></div><h3>' + t('no_campaigns') + '</h3><p>' + t('no_campaigns_sub') + '</p></div>';
       return;
     }
     el.innerHTML = '<div class="campaign-list">' + campaigns.map(c =>
@@ -193,10 +193,11 @@
         '</div>' +
         '<div style="display:flex;align-items:center;gap:12px">' +
           '<span class="badge badge-' + (c.status||'active') + '">' + (c.status||'active') + '</span>' +
-          '<button class="btn-icon" title="Delete" onclick="event.stopPropagation();deleteCampaign(\'' + c.id + '\')">🗑</button>' +
+          '<button class="btn-icon" title="Delete" onclick="event.stopPropagation();deleteCampaign(\'' + c.id + '\')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>' +
         '</div>' +
       '</div>'
     ).join('') + '</div>';
+    if (window.lucide) lucide.createIcons();
   }
 
   async function createCampaign() {
@@ -241,7 +242,7 @@
   function showUpgradeSuccess(plan) {
     const names = { pro: 'Pro', agency: 'Agency' };
     const planName = names[plan] || 'Pro';
-    document.getElementById('success-title').textContent = '🎉 Welcome to ' + planName + '!';
+    document.getElementById('success-title').textContent = 'Welcome to ' + planName + '!';
     document.getElementById('success-sub').textContent = 'Your subscription is active. Enjoy full access to CreatorFlow.';
     document.getElementById('success-overlay').classList.add('open');
   }
@@ -300,5 +301,6 @@
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'campaigns.csv'; a.click();
   }
 </script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>

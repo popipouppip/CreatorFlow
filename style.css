@@ -118,7 +118,10 @@ select option { background: var(--surface); }
 }
 .nav-link:hover { background: var(--surface2); color: var(--text); }
 .nav-link.active { background: var(--accent); color: #fff; }
-.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-icon svg { width: 18px; height: 18px; stroke-width: 1.75; display: block; }
+.btn-icon-sm { width: 14px; height: 14px; vertical-align: -2px; }
+.btn-icon-sm svg { width: 14px; height: 14px; }
 .sidebar-bottom {
   padding: 12px;
   border-top: 1px solid var(--border);
@@ -457,7 +460,8 @@ tbody tr:hover td { background: var(--surface2); }
   padding: 60px 20px;
   color: var(--muted);
 }
-.empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+.empty-icon { margin-bottom: 12px; opacity: 0.35; }
+.empty-icon svg { width: 40px; height: 40px; stroke-width: 1.5; }
 .empty h3 { font-size: 1rem; color: var(--text); margin-bottom: 6px; font-weight: 600; }
 .empty p { font-size: 13px; color: var(--faint); }
 

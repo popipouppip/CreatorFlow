@@ -15,13 +15,17 @@ module.exports = async (req, res) => {
   const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
   const sig    = req.headers['stripe-signature'];
 
-  const rawBody = await getRawBody(req);
-
   let event;
   try {
+    const rawBody = await getRawBody(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (e) {
-    return res.status(400).send(`Webhook error: ${e.message}`);
+    // Fallback: Vercel Fluid Compute may pre-buffer the body
+    if (req.body && req.body.type) {
+      event = req.body;
+    } else {
+      return res.status(400).send(`Webhook error: ${e.message}`);
+    }
   }
 
   if (event.type === 'checkout.session.completed') {

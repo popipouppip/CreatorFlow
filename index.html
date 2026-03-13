@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CreatorFlow — Influencer Campaign Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="landing">
+
+  <!-- NAV -->
+  <nav class="landing-nav">
+    <div class="landing-logo">Creator<span>Flow</span></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-i18n="nav_login" onclick="showTab('login')">Log in</button>
+      <button class="btn btn-primary btn-sm" data-i18n="nav_signup" onclick="showTab('signup')">Get started free</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="landing-hero">
+    <div class="hero-badge" data-i18n="hero_badge">Micro-Influencer CRM</div>
+    <h1 class="hero-title"><span data-i18n="hero_title1">Run influencer campaigns</span><br><span data-i18n="hero_title2">without the chaos</span></h1>
+    <p class="hero-sub" data-i18n="hero_sub">Track every deal from first DM to final payment. Built for small brands who can't afford $500/mo enterprise tools.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" data-i18n="hero_btn_start" onclick="showTab('signup')">Start for free →</button>
+      <button class="btn btn-ghost" data-i18n="hero_btn_pricing" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">See pricing</button>
+    </div>
+  </section>
+
+  <!-- DEMO PREVIEW -->
+  <section class="demo-section">
+    <div class="demo-label" data-i18n="demo_label">Live preview</div>
+    <h2 class="demo-title" data-i18n="demo_title">Everything in one clean interface</h2>
+    <p class="demo-sub-text" data-i18n="demo_sub">See how CreatorFlow looks with real campaigns running</p>
+    <div class="demo-tabs-row">
+      <button class="demo-tab active" data-i18n="demo_tab_dashboard" onclick="showDemo('dashboard',this)">🏠 Dashboard</button>
+      <button class="demo-tab" data-i18n="demo_tab_kanban" onclick="showDemo('kanban',this)">📋 Pipeline</button>
+      <button class="demo-tab" data-i18n="demo_tab_analytics" onclick="showDemo('analytics',this)">📊 Analytics</button>
+    </div>
+    <div class="browser-mockup">
+      <div class="browser-bar">
+        <div class="b-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+        <div class="b-url" id="b-url">app.creatorflow.io/dashboard</div>
+      </div>
+      <div class="mockup-body">
+        <div class="m-sidebar">
+          <div class="m-logo">Creator<span>Flow</span></div>
+          <div class="m-nav">
+            <div class="m-nav-item active" id="mnav-dashboard">🏠 Dashboard</div>
+            <div class="m-nav-item" id="mnav-kanban">📋 Campaigns</div>
+            <div class="m-nav-item" id="mnav-analytics">📊 Analytics</div>
+          </div>
+          <div class="m-sidebar-footer">
+            <div class="m-plan">Trial (12d)</div>
+            <div class="m-email">anna@brand.co</div>
+          </div>
+        </div>
+
+        <div class="mockup-main">
+
+          <!-- DASHBOARD -->
+          <div class="demo-screen" id="demo-dashboard">
+            <div class="m-topbar"><span class="m-page-title">Dashboard</span><button class="m-btn-primary">+ New Campaign</button></div>
+            <div class="m-stats">
+              <div class="m-stat"><div class="m-stat-lbl">CAMPAIGNS</div><div class="m-stat-val">3</div><div class="m-stat-sub">active</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">INFLUENCERS</div><div class="m-stat-val">24</div><div class="m-stat-sub">in database</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">TOTAL SPENT</div><div class="m-stat-val">$4,200</div><div class="m-stat-sub">across campaigns</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">TOTAL REACH</div><div class="m-stat-val">182K</div><div class="m-stat-sub">estimated</div></div>
+            </div>
+            <div class="m-card">
+              <div class="m-card-title">Campaigns</div>
+              <div class="m-camp-item"><span class="m-dot green"></span><div class="m-camp-info"><strong>Summer Collection 2025</strong><span>Fashion · Budget: $2,000</span></div><span class="m-tag green">active</span></div>
+              <div class="m-camp-item"><span class="m-dot green"></span><div class="m-camp-info"><strong>Fitness App Launch</strong><span>Fitness · Budget: $1,500</span></div><span class="m-tag green">active</span></div>
+              <div class="m-camp-item"><span class="m-dot yellow"></span><div class="m-camp-info"><strong>Holiday Giveaway</strong><span>Lifestyle · Budget: $800</span></div><span class="m-tag yellow">paused</span></div>
+            </div>
+          </div>
+
+          <!-- KANBAN -->
+          <div class="demo-screen" id="demo-kanban" style="display:none">
+            <div class="m-topbar"><div><span class="m-page-title">Summer Collection 2025</span><div class="m-camp-meta">Fashion · Budget: <strong>$2,000</strong> · Spent: <strong style="color:#16a34a">$1,450</strong></div></div><button class="m-btn-primary">+ Add Deal</button></div>
+            <div class="m-kanban">
+              <div class="m-col"><div class="m-col-hd"><span class="m-col-name" style="color:#a3a3a3">Found</span><span class="m-col-cnt">2</span></div>
+                <div class="m-deal"><div class="m-deal-name">@fitness_kate</div><div class="m-deal-handle">TikTok · 45K</div><div class="m-deal-ft"><span class="m-amt">$300</span></div></div>
+                <div class="m-deal"><div class="m-deal-name">@lifestyle_m</div><div class="m-deal-handle">Instagram · 28K</div><div class="m-deal-ft"><span class="m-amt">$200</span></div></div>
+              </div>
+              <div class="m-col"><div class="m-col-hd"><span class="m-col-name" style="color:#404040">Contacted</span><span class="m-col-cnt">2</span></div>
+                <div class="m-deal"><div class="m-deal-name">@beauty_sara</div><div class="m-deal-handle">Instagram · 62K</div><div class="m-deal-ft"><span class="m-amt">$500</span><span class="m-dl">Mar 20</span></div></div>
+                <div class="m-deal"><div class="m-deal-name">@foodie_anna</div><div class="m-deal-handle">TikTok · 89K</div><div class="m-deal-ft"><span class="m-amt">$450</span></div></div>
+              </div>
+              <div class="m-col"><div class="m-col-hd"><span class="m-col-name" style="color:#ca8a04">Negotiating</span><span class="m-col-cnt">1</span></div>
+                <div class="m-deal"><div class="m-deal-name">@tech_reviews</div><div class="m-deal-handle">YouTube · 120K</div><div class="m-deal-ft"><span class="m-amt">$800</span><span class="m-dl">Mar 25</span></div></div>
+              </div>
+              <div class="m-col"><div class="m-col-hd"><span class="m-col-name" style="color:#0a0a0a">Agreed</span><span class="m-col-cnt">1</span></div>
+                <div class="m-deal"><div class="m-deal-name">@travel_leo</div><div class="m-deal-handle">Instagram · 95K</div><div class="m-deal-ft"><span class="m-amt">$700</span></div></div>
+              </div>
+              <div class="m-col"><div class="m-col-hd"><span class="m-col-name" style="color:#16a34a">Posted</span><span class="m-col-cnt">2</span></div>
+                <div class="m-deal"><div class="m-deal-name">@gaming_max</div><div class="m-deal-handle">YouTube · 180K</div><div class="m-deal-ft"><span class="m-amt">$900</span></div></div>
+                <div class="m-deal"><div class="m-deal-name">@style_bro</div><div class="m-deal-handle">TikTok · 41K</div><div class="m-deal-ft"><span class="m-amt">$350</span></div></div>
+              </div>
+              <div class="m-col"><div class="m-col-hd"><span class="m-col-name" style="color:#262626">Paid</span><span class="m-col-cnt">2</span></div>
+                <div class="m-deal"><div class="m-deal-name">@fashion_jen</div><div class="m-deal-handle">Instagram · 55K</div><div class="m-deal-ft"><span class="m-amt">$550</span></div></div>
+                <div class="m-deal"><div class="m-deal-name">@sport_dan</div><div class="m-deal-handle">TikTok · 38K</div><div class="m-deal-ft"><span class="m-amt">$250</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="demo-screen" id="demo-analytics" style="display:none">
+            <div class="m-topbar"><span class="m-page-title">Analytics</span><button class="m-btn-ghost">⬇ Export CSV</button></div>
+            <div class="m-stats">
+              <div class="m-stat"><div class="m-stat-lbl">TOTAL SPENT</div><div class="m-stat-val">$4,200</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">TOTAL REACH</div><div class="m-stat-val">182K</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">AVG CPM</div><div class="m-stat-val">$23.1</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">DEALS</div><div class="m-stat-val">14</div></div>
+              <div class="m-stat"><div class="m-stat-lbl">CONVERSION</div><div class="m-stat-val">21%</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px">
+              <div class="m-card">
+                <div class="m-card-title">Spend by Campaign</div>
+                <div class="m-bars">
+                  <div class="m-bar-row"><span>Summer Collection</span><div class="m-bar-track"><div class="m-bar-fill" style="width:82%"></div></div><span>$1,650</span></div>
+                  <div class="m-bar-row"><span>Fitness App Launch</span><div class="m-bar-track"><div class="m-bar-fill" style="width:62%"></div></div><span>$1,250</span></div>
+                  <div class="m-bar-row"><span>Holiday Giveaway</span><div class="m-bar-track"><div class="m-bar-fill" style="width:36%"></div></div><span>$750</span></div>
+                </div>
+              </div>
+              <div class="m-card">
+                <div class="m-card-title">Deals by Stage</div>
+                <div class="m-donut-wrap">
+                  <div class="m-donut"></div>
+                  <div class="m-legend">
+                    <div class="m-leg-item"><span style="background:#a3a3a3"></span>Found (2)</div>
+                    <div class="m-leg-item"><span style="background:#404040"></span>Contacted (2)</div>
+                    <div class="m-leg-item"><span style="background:#ca8a04"></span>Negotiating (1)</div>
+                    <div class="m-leg-item"><span style="background:#16a34a"></span>Posted (2)</div>
+                    <div class="m-leg-item"><span style="background:#262626"></span>Paid (3)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="m-card" style="margin-top:10px">
+              <div class="m-card-title">Top Influencers by ROI</div>
+              <div class="m-table">
+                <div class="m-row m-row-hd"><span>Influencer</span><span>Platform</span><span>Paid</span><span>Reach</span><span>CPM</span></div>
+                <div class="m-row"><span>@gaming_max</span><span class="m-platform yt">YouTube</span><span>$900</span><span>180K</span><span>$5.0</span></div>
+                <div class="m-row"><span>@tech_reviews</span><span class="m-platform yt">YouTube</span><span>$800</span><span>120K</span><span>$6.7</span></div>
+                <div class="m-row"><span>@beauty_sara</span><span class="m-platform ig">Instagram</span><span>$500</span><span>62K</span><span>$8.1</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3 data-i18n="feat_title1">Deal Pipeline</h3>
+      <p data-i18n="feat_desc1">Drag deals across 6 stages: Found → Contacted → Negotiating → Agreed → Posted → Paid. Always know where every deal stands.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <h3 data-i18n="feat_title2">Influencer Database</h3>
+      <p data-i18n="feat_desc2">Build your own searchable database of creators — platform, niche, follower count, contact info, all in one place.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3 data-i18n="feat_title3">Campaign Analytics</h3>
+      <p data-i18n="feat_desc3">Track total spend, reach, and CPM per campaign. Instantly see which influencers give you the best ROI.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✉️</div>
+      <h3 data-i18n="feat_title4">Outreach Templates</h3>
+      <p data-i18n="feat_desc4">Send first contact and follow-up messages in seconds with plug-and-play templates that actually get replies.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📥</div>
+      <h3 data-i18n="feat_title5">CSV Export</h3>
+      <p data-i18n="feat_desc5">Export all your campaign data — deals, influencers, spend, reach — to Excel or Google Sheets in one click.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3 data-i18n="feat_title6">Real-time Sync</h3>
+      <p data-i18n="feat_desc6">Every change saves instantly. Your deal board, amounts, and analytics are always up to date.</p>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <h2 data-i18n="how_title">Go from zero to your first paid deal in minutes</h2>
+    <div class="steps-row">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <h4 data-i18n="step1_title">Add your influencers</h4>
+        <p data-i18n="step1_desc">Build a database of creators you want to work with. Filter by platform, niche, or follower count.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <h4 data-i18n="step2_title">Create a campaign</h4>
+        <p data-i18n="step2_desc">Set a budget and add deals to your pipeline. Move cards as negotiations progress.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <h4 data-i18n="step3_title">Track & analyze</h4>
+        <p data-i18n="step3_desc">See your CPM, ROI, and top performers. Export data for reports or client decks.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <h2 data-i18n="pricing_title">Simple pricing</h2>
+    <p class="pricing-sub" data-i18n="pricing_sub">Start free for 14 days. No credit card required.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card highlighted">
+        <div class="pricing-badge" data-i18n="pricing_popular">Most popular</div>
+        <div class="pricing-plan" data-i18n="plan_pro">Pro</div>
+        <div class="pricing-price">$19 <span>/mo</span></div>
+        <p class="pricing-desc" data-i18n="plan_pro_desc">For growing brands</p>
+        <ul class="pricing-features">
+          <li data-i18n="plan_pro_f1">✓ Up to 100 influencers</li>
+          <li data-i18n="plan_pro_f2">✓ 10 active campaigns</li>
+          <li data-i18n="plan_pro_f3">✓ Full analytics + CSV export</li>
+          <li data-i18n="plan_pro_f4">✓ Unlimited outreach templates</li>
+          <li data-i18n="plan_pro_f5">✓ Drag & drop deals</li>
+          <li data-i18n="plan_pro_f6">✓ Priority support</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%" data-i18n="btn_trial" onclick="showTab('signup')">Start free trial →</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-plan" data-i18n="plan_agency">Agency</div>
+        <div class="pricing-price">$34.99 <span>/mo</span></div>
+        <p class="pricing-desc" data-i18n="plan_agency_desc">For agencies & power users</p>
+        <ul class="pricing-features">
+          <li data-i18n="plan_ag_f1">✓ Unlimited influencers</li>
+          <li data-i18n="plan_ag_f2">✓ Unlimited campaigns</li>
+          <li data-i18n="plan_ag_f3">✓ Up to 5 team members</li>
+          <li data-i18n="plan_ag_f4">✓ White-label reports</li>
+          <li data-i18n="plan_ag_f5">✓ Everything in Pro</li>
+          <li data-i18n="plan_ag_f6">✓ Dedicated support</li>
+        </ul>
+        <button class="btn btn-ghost" style="width:100%" data-i18n="btn_trial" onclick="showTab('signup')">Start free trial →</button>
+      </div>
+    </div>
+    <p class="pricing-note" data-i18n="pricing_note">Cancel anytime · No hidden fees · Your data stays safe</p>
+  </section>
+
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="modal-auth" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal" style="max-width:400px;width:100%">
+    <div class="modal-header">
+      <div class="auth-tabs" style="border:none;padding:0;gap:4px">
+        <button class="auth-tab active" id="tab-signup" data-i18n="auth_signup_tab" onclick="showTab('signup')">Sign up</button>
+        <button class="auth-tab" id="tab-login" data-i18n="auth_login_tab" onclick="showTab('login')">Log in</button>
+      </div>
+      <button class="modal-close" onclick="closeAuthModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- SIGN UP -->
+      <form class="auth-form" id="form-signup" onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label class="form-label" data-i18n="auth_email">Email</label>
+          <input type="email" id="su-email" data-i18n-ph="auth_ph_email" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="auth_password">Password</label>
+          <input type="password" id="su-pass" data-i18n-ph="auth_ph_pass_new" placeholder="Min 6 characters" required minlength="6">
+        </div>
+        <p class="auth-error" id="su-error"></p>
+        <button type="submit" class="btn btn-primary" style="width:100%" id="su-btn" data-i18n="auth_create_btn">Create free account</button>
+        <p style="font-size:12px;color:var(--faint);text-align:center;margin-top:8px" data-i18n="auth_terms">By signing up you agree to our Terms of Service</p>
+      </form>
+
+      <!-- LOG IN -->
+      <form class="auth-form" id="form-login" style="display:none" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" data-i18n="auth_email">Email</label>
+          <input type="email" id="li-email" data-i18n-ph="auth_ph_email" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="auth_password">Password</label>
+          <input type="password" id="li-pass" data-i18n-ph="auth_ph_pass" placeholder="Your password" required>
+        </div>
+        <p class="auth-error" id="li-error"></p>
+        <button type="submit" class="btn btn-primary" style="width:100%" id="li-btn" data-i18n="auth_login_btn">Log in</button>
+        <p style="font-size:12px;text-align:center;margin-top:8px"><a href="#" onclick="handleForgot(event)" style="color:var(--accent)" data-i18n="auth_forgot">Forgot password?</a></p>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script src="i18n.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  // Redirect if already logged in
+  auth.onAuthStateChanged(user => {
+    if (user) window.location.href = 'dashboard.html';
+  });
+
+  function showDemo(id, btn) {
+    document.querySelectorAll('.demo-screen').forEach(s => s.style.display = 'none');
+    document.getElementById('demo-' + id).style.display = '';
+    document.querySelectorAll('.demo-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.m-nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('mnav-' + id)?.classList.add('active');
+    const urls = { dashboard: 'app.creatorflow.io/dashboard', kanban: 'app.creatorflow.io/campaign?id=summer', analytics: 'app.creatorflow.io/analytics' };
+    document.getElementById('b-url').textContent = urls[id];
+  }
+
+  function showTab(tab) {
+    const isSignup = tab === 'signup';
+    document.getElementById('form-signup').style.display = isSignup ? 'flex' : 'none';
+    document.getElementById('form-login').style.display  = isSignup ? 'none'  : 'flex';
+    document.getElementById('tab-signup').classList.toggle('active', isSignup);
+    document.getElementById('tab-login').classList.toggle('active', !isSignup);
+    document.getElementById('modal-auth').classList.add('open');
+  }
+
+  function closeAuthModal() {
+    document.getElementById('modal-auth').classList.remove('open');
+  }
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('su-email').value;
+    const pass  = document.getElementById('su-pass').value;
+    const btn   = document.getElementById('su-btn');
+    const err   = document.getElementById('su-error');
+    err.style.display = 'none';
+    btn.textContent = t('auth_creating');
+    btn.disabled = true;
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await db.collection('users').doc(cred.user.uid).set({
+        email, plan: 'free',
+        trialStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      window.location.href = 'dashboard.html';
+    } catch(ex) {
+      err.textContent = friendlyError(ex.code);
+      err.style.display = 'block';
+      btn.textContent = t('auth_create_btn');
+      btn.disabled = false;
+    }
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('li-email').value;
+    const pass  = document.getElementById('li-pass').value;
+    const btn   = document.getElementById('li-btn');
+    const err   = document.getElementById('li-error');
+    err.style.display = 'none';
+    btn.textContent = t('auth_logging');
+    btn.disabled = true;
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+      window.location.href = 'dashboard.html';
+    } catch(ex) {
+      err.textContent = friendlyError(ex.code);
+      err.style.display = 'block';
+      btn.textContent = t('auth_login_btn');
+      btn.disabled = false;
+    }
+  }
+
+  async function handleForgot(e) {
+    e.preventDefault();
+    const email = document.getElementById('li-email').value.trim();
+    const err   = document.getElementById('li-error');
+    if (!email) { err.textContent = t('auth_enter_email'); err.style.display = 'block'; return; }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      err.style.color = 'var(--green)';
+      err.textContent = t('auth_reset_sent');
+      err.style.display = 'block';
+    } catch(ex) {
+      err.style.color = 'var(--red)';
+      err.textContent = friendlyError(ex.code);
+      err.style.display = 'block';
+    }
+  }
+
+  function friendlyError(code) {
+    const map = {
+      'auth/email-already-in-use': t('err_email_used'),
+      'auth/user-not-found':       t('err_not_found'),
+      'auth/wrong-password':       t('err_wrong_pass'),
+      'auth/invalid-email':        t('err_invalid_email'),
+      'auth/weak-password':        t('err_weak_pass'),
+      'auth/too-many-requests':    t('err_too_many'),
+    };
+    return map[code] || t('err_generic');
+  }
+</script>
+</body>
+</html>

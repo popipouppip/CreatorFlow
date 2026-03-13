@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Influencers — CreatorFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Creator<span>Flow</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"   class="nav-link"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link active"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="plan-badge">
+        <span class="plan-name" id="plan-label">Free</span>
+        <a href="#" class="plan-upgrade" id="upgrade-link" data-i18n="upgrade">Upgrade →</a>
+      </div>
+      <div class="user-info">
+        <span class="user-email" id="user-email">—</span>
+        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="trial-banner" id="trial-banner">
+      <span>⏳ <strong><span data-days></span></strong> <span data-i18n="trial_text">left in your free trial — upgrade to keep access.</span></span>
+      <button class="btn btn-primary btn-sm" data-i18n="btn_upgrade_now" onclick="upgradePlan('pro')">Upgrade now</button>
+    </div>
+    <div class="topbar">
+      <h1 data-i18n="inf_title">Influencers</h1>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="btn btn-primary" data-i18n="btn_add_influencer" onclick="openAdd()">+ Add Influencer</button>
+    </div>
+
+    <div class="page-content">
+
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search" data-i18n-ph="ph_search" placeholder="Search by name or handle…" oninput="renderTable()">
+        </div>
+        <select class="filter-select" id="filter-platform" onchange="renderTable()">
+          <option value="" data-i18n="all_platforms">All platforms</option>
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="youtube">YouTube</option>
+          <option value="twitter">Twitter/X</option>
+        </select>
+        <select class="filter-select" id="filter-niche" onchange="renderTable()">
+          <option value="" data-i18n="all_niches">All niches</option>
+          <option value="fashion">Fashion</option>
+          <option value="fitness">Fitness</option>
+          <option value="food">Food</option>
+          <option value="tech">Tech</option>
+          <option value="beauty">Beauty</option>
+          <option value="travel">Travel</option>
+          <option value="lifestyle">Lifestyle</option>
+          <option value="gaming">Gaming</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th_name">Name</th>
+                <th data-i18n="th_platform">Platform</th>
+                <th data-i18n="th_handle">Handle</th>
+                <th data-i18n="th_niche">Niche</th>
+                <th data-i18n="th_followers">Followers</th>
+                <th data-i18n="th_contact">Contact</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="influencers-tbody">
+              <tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><h3 data-i18n="no_influencers">No influencers yet</h3><p data-i18n="no_influencers_sub">Add your first influencer to build your database</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-top:28px">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" data-i18n="templates_title">✉️ Outreach Templates</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="template-item" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:6px" data-i18n="tpl_first_name">First Contact — Casual</div>
+              <div style="font-size:13px;color:var(--muted);line-height:1.6">Hi [Name]! I love your content around [niche]. We're launching [product] and think your audience would love it. Would you be open to a collaboration? Happy to share details if interested!</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:10px" data-i18n="btn_copy" onclick="copyTemplate(this)">Copy</button>
+            </div>
+            <div class="template-item" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:6px" data-i18n="tpl_followup_name">Follow-up (No reply)</div>
+              <div style="font-size:13px;color:var(--muted);line-height:1.6">Hey [Name], just following up on my previous message! We'd love to work with you on [product]. We're offering $[amount] for one [post type]. Let me know if you're interested!</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:10px" data-i18n="btn_copy" onclick="copyTemplate(this)">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-inf">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Add Influencer</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_name">Name</label>
+          <input type="text" id="f-name" data-i18n-ph="ph_name" placeholder="Jane Doe">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_platform">Platform</label>
+          <select id="f-platform">
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="youtube">YouTube</option>
+            <option value="twitter">Twitter/X</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_handle_lbl">Handle / Username</label>
+          <input type="text" id="f-handle" data-i18n-ph="ph_handle" placeholder="@janedoe">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_niche_lbl">Niche</label>
+          <select id="f-niche">
+            <option value="fashion">Fashion</option>
+            <option value="fitness">Fitness</option>
+            <option value="food">Food</option>
+            <option value="tech">Tech</option>
+            <option value="beauty">Beauty</option>
+            <option value="travel">Travel</option>
+            <option value="lifestyle">Lifestyle</option>
+            <option value="gaming">Gaming</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_followers">Followers</label>
+          <input type="number" id="f-followers" data-i18n-ph="ph_followers" placeholder="25000">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_contact">Contact (email or DM link)</label>
+          <input type="text" id="f-contact" data-i18n-ph="ph_contact" placeholder="jane@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_profile_url">Profile URL</label>
+        <input type="text" id="f-url" data-i18n-ph="ph_profile_url" placeholder="https://instagram.com/janedoe">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_notes">Notes</label>
+        <textarea id="f-notes" data-i18n-ph="ph_notes" placeholder="Any notes about this influencer…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" data-i18n="btn_save" onclick="saveInfluencer()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="i18n.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="trial.js"></script>
+<script>
+  const LIMITS = { free: 10, pro: 100, agency: Infinity };
+  let currentUser = null, userPlan = 'free', allInfluencers = [], editingId = null;
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) return location.href = 'index.html';
+    currentUser = user;
+    document.getElementById('user-email').textContent = user.email;
+    const snap = await db.collection('users').doc(user.uid).get();
+    const userData = snap.data() || {};
+    userPlan = userData.plan || 'free';
+    document.getElementById('plan-label').textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
+    const trial = getTrialStatus(userData);
+    applyTrialUI(trial);
+    if (!trial.access) return;
+    loadInfluencers();
+  });
+
+  async function loadInfluencers() {
+    const snap = await db.collection('users').doc(currentUser.uid).collection('influencers').orderBy('createdAt','desc').get();
+    allInfluencers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTable();
+  }
+
+  function renderTable() {
+    const q        = document.getElementById('search').value.toLowerCase();
+    const platform = document.getElementById('filter-platform').value;
+    const niche    = document.getElementById('filter-niche').value;
+
+    const filtered = allInfluencers.filter(i => {
+      const matchQ = !q || i.name?.toLowerCase().includes(q) || i.handle?.toLowerCase().includes(q);
+      const matchP = !platform || i.platform === platform;
+      const matchN = !niche    || i.niche === niche;
+      return matchQ && matchP && matchN;
+    });
+
+    const tbody = document.getElementById('influencers-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><h3>' + t('no_inf_found') + '</h3><p>' + t('no_inf_found_sub') + '</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(i =>
+      '<tr>' +
+        '<td class="td-name">' + esc(i.name) + '</td>' +
+        '<td><span class="badge badge-' + i.platform + '">' + i.platform + '</span></td>' +
+        '<td class="td-handle">' + (i.url ? '<a href="' + esc(i.url) + '" target="_blank">' + esc(i.handle) + '</a>' : esc(i.handle)) + '</td>' +
+        '<td>' + esc(i.niche) + '</td>' +
+        '<td class="td-num">' + fmtNum(i.followers) + '</td>' +
+        '<td style="font-size:12px;color:var(--muted)">' + esc(i.contact||'—') + '</td>' +
+        '<td><div class="td-actions">' +
+          '<button class="btn-icon" title="Edit" onclick="openEdit(\'' + i.id + '\')">✏️</button>' +
+          '<button class="btn-icon" title="Delete" onclick="deleteInfluencer(\'' + i.id + '\')">🗑</button>' +
+        '</div></td>' +
+      '</tr>'
+    ).join('');
+  }
+
+  function openAdd() {
+    editingId = null;
+    document.getElementById('modal-title').textContent = t('modal_add_inf');
+    ['f-name','f-handle','f-contact','f-url','f-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-followers').value = '';
+    document.getElementById('f-platform').value = 'instagram';
+    document.getElementById('f-niche').value = 'fashion';
+    document.getElementById('modal-inf').classList.add('open');
+  }
+
+  function openEdit(id) {
+    const inf = allInfluencers.find(i => i.id === id);
+    if (!inf) return;
+    editingId = id;
+    document.getElementById('modal-title').textContent = t('modal_edit_inf');
+    document.getElementById('f-name').value     = inf.name || '';
+    document.getElementById('f-platform').value = inf.platform || 'instagram';
+    document.getElementById('f-handle').value   = inf.handle || '';
+    document.getElementById('f-niche').value    = inf.niche || 'fashion';
+    document.getElementById('f-followers').value = inf.followers || '';
+    document.getElementById('f-contact').value  = inf.contact || '';
+    document.getElementById('f-url').value      = inf.url || '';
+    document.getElementById('f-notes').value    = inf.notes || '';
+    document.getElementById('modal-inf').classList.add('open');
+  }
+
+  async function saveInfluencer() {
+    const data = {
+      name:      document.getElementById('f-name').value.trim(),
+      platform:  document.getElementById('f-platform').value,
+      handle:    document.getElementById('f-handle').value.trim(),
+      niche:     document.getElementById('f-niche').value,
+      followers: Number(document.getElementById('f-followers').value) || 0,
+      contact:   document.getElementById('f-contact').value.trim(),
+      url:       document.getElementById('f-url').value.trim(),
+      notes:     document.getElementById('f-notes').value.trim(),
+    };
+    if (!data.name) return toast(t('toast_enter_name_inf'), 'error');
+    if (!data.handle) return toast(t('toast_enter_handle'), 'error');
+
+    const col = db.collection('users').doc(currentUser.uid).collection('influencers');
+
+    if (!editingId) {
+      const limit = LIMITS[userPlan];
+      const snap = await col.get();
+      if (snap.size >= limit) { toast(t('plan_limit_influencers', { n: limit }), 'error'); return; }
+      await col.add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    } else {
+      await col.doc(editingId).update(data);
+    }
+
+    closeModal();
+    toast(editingId ? t('toast_inf_updated') : t('toast_inf_added'), 'success');
+    loadInfluencers();
+  }
+
+  async function deleteInfluencer(id) {
+    if (!confirm(t('confirm_delete_inf'))) return;
+    await db.collection('users').doc(currentUser.uid).collection('influencers').doc(id).delete();
+    toast(t('toast_removed'), 'success');
+    loadInfluencers();
+  }
+
+  function closeModal() { document.getElementById('modal-inf').classList.remove('open'); }
+
+  function copyTemplate(btn) {
+    const text = btn.previousElementSibling.textContent;
+    navigator.clipboard.writeText(text).then(() => toast(t('toast_copied'), 'success'));
+  }
+
+  function fmtNum(n) { return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(n||0); }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.className = 'toast ' + (type||'success') + ' show';
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  document.addEventListener('langchange', () => renderTable());
+  document.getElementById('modal-inf').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+</script>
+</body>
+</html>

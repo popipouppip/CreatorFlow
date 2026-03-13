@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — CreatorFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Creator<span>Flow</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"   class="nav-link"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link active"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="plan-badge">
+        <span class="plan-name" id="plan-label">Free</span>
+        <a href="#" class="plan-upgrade" id="upgrade-link" data-i18n="upgrade" onclick="event.preventDefault();openUpgradeModal()">Upgrade →</a>
+      </div>
+      <div class="user-info">
+        <span class="user-email" id="user-email">—</span>
+        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="trial-banner" id="trial-banner">
+      <span>⏳ <strong><span data-days></span></strong> <span data-i18n="trial_text">left in your free trial — upgrade to keep access.</span></span>
+      <button class="btn btn-primary btn-sm" data-i18n="btn_upgrade_now" onclick="upgradePlan('pro')">Upgrade now</button>
+    </div>
+    <div class="topbar">
+      <h1 data-i18n="an_title">Analytics</h1>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="export-btn" data-i18n="btn_export" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+
+    <div class="page-content">
+
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">
+        <div class="stat-card">
+          <label data-i18n="an_total_spent">Total Spent</label>
+          <div class="val" id="s-spent">—</div>
+          <div class="sub" data-i18n="sub_paid_posted">paid + posted deals</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="an_total_reach">Total Reach</label>
+          <div class="val" id="s-reach">—</div>
+          <div class="sub" data-i18n="sub_combined_views">combined views</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="an_avg_cpm">Avg CPM</label>
+          <div class="val" id="s-cpm">—</div>
+          <div class="sub" data-i18n="sub_cost_1k">cost per 1K views</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="an_total_deals">Total Deals</label>
+          <div class="val" id="s-deals">—</div>
+          <div class="sub" data-i18n="sub_all_camps">across all campaigns</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="an_conversion">Conversion Rate</label>
+          <div class="val" id="s-conv">—</div>
+          <div class="sub" data-i18n="sub_found_paid">found → paid</div>
+        </div>
+      </div>
+
+      <div class="analytics-grid" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><span class="card-title" data-i18n="chart_spend_by_camp">Spend by Campaign</span></div>
+          <div class="chart-wrap"><canvas id="chart-campaigns"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title" data-i18n="chart_deals_by_stage">Deals by Stage</span></div>
+          <div class="chart-wrap"><canvas id="chart-stages"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title" data-i18n="top_influencers_title">Top Influencers by ROI</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th_name">Name</th>
+                <th data-i18n="th_platform">Platform</th>
+                <th data-i18n="th_amount_paid">Amount Paid</th>
+                <th data-i18n="th_reach">Reach</th>
+                <th data-i18n="th_cpm">CPM</th>
+                <th data-i18n="th_deals_count">Deals</th>
+              </tr>
+            </thead>
+            <tbody id="top-influencers"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" data-i18n="all_deals_title">All Deals</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th_campaign">Campaign</th>
+                <th data-i18n="th_influencer">Influencer</th>
+                <th data-i18n="th_stage_h">Stage</th>
+                <th data-i18n="th_amount">Amount</th>
+                <th data-i18n="th_reach">Reach</th>
+                <th data-i18n="th_cpm">CPM</th>
+                <th data-i18n="th_deadline_h">Deadline</th>
+              </tr>
+            </thead>
+            <tbody id="all-deals"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="i18n.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="firebase-config.js"></script>
+<script src="trial.js"></script>
+<script>
+  Chart.defaults.color = '#737373';
+  Chart.defaults.borderColor = '#e5e5e5';
+
+  let currentUser = null, allData = [], cachedCamps = [], cachedDealsBycamp = {};
+  let chartCampaigns = null, chartStages = null;
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) return location.href = 'index.html';
+    currentUser = user;
+    document.getElementById('user-email').textContent = user.email;
+    const snap = await db.collection('users').doc(user.uid).get();
+    const userData = snap.data() || {};
+    const plan = userData.plan || 'free';
+    document.getElementById('plan-label').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+    const trial = getTrialStatus(userData);
+    applyTrialUI(trial);
+    if (!trial.access) return;
+    loadAnalytics();
+  });
+
+  async function loadAnalytics() {
+    const uid = currentUser.uid;
+    const campSnap = await db.collection('users').doc(uid).collection('campaigns').get();
+    cachedCamps = campSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const dealPromises = cachedCamps.map(async c => {
+      const ds = await db.collection('users').doc(uid).collection('campaigns').doc(c.id).collection('deals').get();
+      cachedDealsBycamp[c.id] = ds.docs.map(d => ({ id: d.id, campaignName: c.name, campaignId: c.id, ...d.data() }));
+    });
+    await Promise.all(dealPromises);
+
+    allData = Object.values(cachedDealsBycamp).flat();
+    renderAnalytics();
+  }
+
+  function renderAnalytics() {
+    const allDeals = allData;
+    const stageLabels = [t('stage_found'), t('stage_contacted'), t('stage_negotiating'), t('stage_agreed'), t('stage_posted'), t('stage_paid')];
+    const stageKeys   = ['found','contacted','negotiating','agreed','posted','paid'];
+    const stageColors = ['#a3a3a3','#d4d4d4','#737373','#404040','#262626','#0a0a0a'];
+
+    const paid = allDeals.filter(d => d.stage === 'paid' || d.stage === 'posted');
+    const totalSpent = paid.reduce((a, d) => a + Number(d.amount||0), 0);
+    const totalReach = allDeals.reduce((a, d) => a + Number(d.reach||0), 0);
+    const cpm = totalReach > 0 ? ((totalSpent / totalReach) * 1000).toFixed(2) : '—';
+    const paidTotal = allDeals.filter(d => d.stage === 'paid').length;
+    const conv = allDeals.length > 0 ? Math.round((paidTotal / allDeals.length) * 100) + '%' : '—';
+
+    document.getElementById('s-spent').textContent = '$' + totalSpent.toLocaleString();
+    document.getElementById('s-reach').textContent = fmtNum(totalReach);
+    document.getElementById('s-cpm').textContent   = cpm === '—' ? '—' : '$' + cpm;
+    document.getElementById('s-deals').textContent = allDeals.length;
+    document.getElementById('s-conv').textContent  = conv;
+
+    const campSpend = cachedCamps.map(c => ({
+      name: c.name,
+      spend: (cachedDealsBycamp[c.id]||[]).filter(d => d.stage==='paid'||d.stage==='posted').reduce((a,d)=>a+Number(d.amount||0),0)
+    })).filter(c => c.spend > 0);
+
+    if (chartCampaigns) chartCampaigns.destroy();
+    chartCampaigns = new Chart(document.getElementById('chart-campaigns'), {
+      type: 'bar',
+      data: {
+        labels: campSpend.map(c => c.name),
+        datasets: [{ label: t('an_total_spent'), data: campSpend.map(c => c.spend), backgroundColor: '#0a0a0a99', borderRadius: 6 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
+    });
+
+    const stageCounts = stageKeys.map(k => allDeals.filter(d => d.stage === k).length);
+
+    if (chartStages) chartStages.destroy();
+    chartStages = new Chart(document.getElementById('chart-stages'), {
+      type: 'doughnut',
+      data: { labels: stageLabels, datasets: [{ data: stageCounts, backgroundColor: stageColors, borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+    });
+
+    const infMap = {};
+    allDeals.forEach(d => {
+      if (!d.influencerName) return;
+      if (!infMap[d.influencerName]) infMap[d.influencerName] = { name: d.influencerName, platform: d.platform, spent: 0, reach: 0, deals: 0 };
+      if (d.stage === 'paid' || d.stage === 'posted') infMap[d.influencerName].spent += Number(d.amount||0);
+      infMap[d.influencerName].reach += Number(d.reach||0);
+      infMap[d.influencerName].deals++;
+    });
+    const topInf = Object.values(infMap).sort((a,b) => {
+      const cpmA = a.reach > 0 ? a.spent / a.reach * 1000 : Infinity;
+      const cpmB = b.reach > 0 ? b.spent / b.reach * 1000 : Infinity;
+      return cpmA - cpmB;
+    });
+
+    document.getElementById('top-influencers').innerHTML = topInf.length ? topInf.map(i => {
+      const c = i.reach > 0 ? '$' + (i.spent / i.reach * 1000).toFixed(2) : '—';
+      return '<tr>' +
+        '<td class="td-name">' + esc(i.name) + '</td>' +
+        '<td><span class="badge badge-' + (i.platform||'') + '">' + (i.platform||'—') + '</span></td>' +
+        '<td class="td-num">$' + i.spent.toLocaleString() + '</td>' +
+        '<td class="td-num">' + fmtNum(i.reach) + '</td>' +
+        '<td class="td-num">' + c + '</td>' +
+        '<td>' + i.deals + '</td>' +
+      '</tr>';
+    }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">' + t('no_deal_data') + '</td></tr>';
+
+    document.getElementById('all-deals').innerHTML = allDeals.length ? allDeals.map(d => {
+      const c = d.reach > 0 && (d.stage==='paid'||d.stage==='posted') ? '$'+(Number(d.amount||0)/d.reach*1000).toFixed(2) : '—';
+      return '<tr>' +
+        '<td>' + esc(d.campaignName) + '</td>' +
+        '<td class="td-name">' + esc(d.influencerName) + '</td>' +
+        '<td><span class="badge badge-' + stageColor(d.stage) + '">' + d.stage + '</span></td>' +
+        '<td class="td-num">$' + Number(d.amount||0).toLocaleString() + '</td>' +
+        '<td>' + fmtNum(d.reach) + '</td>' +
+        '<td>' + c + '</td>' +
+        '<td style="font-size:12px;color:var(--muted)">' + (d.deadline||'—') + '</td>' +
+      '</tr>';
+    }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">' + t('no_deals_yet') + '</td></tr>';
+  }
+
+  function stageColor(s) {
+    return { found:'', contacted:'active', negotiating:'paused', agreed:'active', posted:'completed', paid:'completed' }[s] || '';
+  }
+
+  function exportCSV() {
+    if (!allData.length) return alert(t('no_deals_yet'));
+    const rows = [['Campaign','Influencer','Platform','Stage','Amount','Reach','CPM','Deadline','Post URL']];
+    allData.forEach(d => {
+      const c = d.reach > 0 ? (Number(d.amount||0)/d.reach*1000).toFixed(2) : '';
+      rows.push([d.campaignName,d.influencerName,d.platform,d.stage,d.amount||0,d.reach||0,c,d.deadline||'',d.postUrl||'']);
+    });
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'creatorflow-export.csv';
+    a.click();
+  }
+
+  function fmtNum(n) { n = Number(n)||0; return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n); }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  document.addEventListener('langchange', () => { if (allData.length) renderAnalytics(); });
+</script>
+</body>
+</html>

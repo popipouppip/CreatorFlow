@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — CreatorFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Creator<span>Flow</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"   class="nav-link active"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="plan-badge">
+        <span class="plan-name" id="plan-label">Free</span>
+        <a href="#" class="plan-upgrade" id="upgrade-link" data-i18n="upgrade" onclick="event.preventDefault();openUpgradeModal()">Upgrade →</a>
+      </div>
+      <div class="user-info">
+        <span class="user-email" id="user-email">—</span>
+        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="trial-banner" id="trial-banner">
+      <span>⏳ <strong><span data-days></span></strong> <span data-i18n="trial_text">left in your free trial — upgrade to keep access.</span></span>
+      <button class="btn btn-primary btn-sm" data-i18n="btn_upgrade_now" onclick="upgradePlan('pro')">Upgrade now</button>
+    </div>
+    <div class="topbar">
+      <h1 data-i18n="dash_title">Dashboard</h1>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="btn btn-primary" data-i18n="dash_new_campaign" onclick="openNewCampaign()">+ New Campaign</button>
+    </div>
+
+    <div class="page-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <label data-i18n="stat_campaigns">Campaigns</label>
+          <div class="val" id="stat-campaigns">—</div>
+          <div class="sub" data-i18n="sub_active">active</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="stat_influencers">Influencers</label>
+          <div class="val" id="stat-influencers">—</div>
+          <div class="sub" data-i18n="sub_in_database">in database</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="stat_spent">Total Spent</label>
+          <div class="val" id="stat-spent">—</div>
+          <div class="sub" data-i18n="sub_all_campaigns">across all campaigns</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="stat_reach">Total Reach</label>
+          <div class="val" id="stat-reach">—</div>
+          <div class="sub" data-i18n="sub_estimated">estimated</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" data-i18n="campaigns_title">Campaigns</span>
+        </div>
+        <div id="campaigns-list">
+          <div class="empty">
+            <div class="empty-icon">📋</div>
+            <h3 data-i18n="no_campaigns">No campaigns yet</h3>
+            <p data-i18n="no_campaigns_sub">Create your first campaign to start tracking influencer deals</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-campaign">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" data-i18n="modal_new_campaign">New Campaign</span>
+      <button class="modal-close" onclick="closeModal('modal-campaign')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_campaign_name">Campaign Name</label>
+        <input type="text" id="c-name" data-i18n-ph="ph_campaign_name" placeholder="e.g. Summer Collection Launch">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_description">Description</label>
+        <textarea id="c-desc" data-i18n-ph="ph_description" placeholder="What's this campaign about?"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_budget">Total Budget ($)</label>
+        <input type="number" id="c-budget" placeholder="e.g. 2000" min="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeModal('modal-campaign')">Cancel</button>
+      <button class="btn btn-primary" data-i18n="btn_create_campaign" onclick="createCampaign()">Create Campaign</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="i18n.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="trial.js"></script>
+<script>
+  const LIMITS = { free: { campaigns: 1, influencers: 10 }, pro: { campaigns: 10, influencers: 100 }, agency: { campaigns: Infinity, influencers: Infinity } };
+  let currentUser = null, userPlan = 'free', cachedCampaigns = [];
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) return location.href = 'index.html';
+    currentUser = user;
+    document.getElementById('user-email').textContent = user.email;
+    const snap = await db.collection('users').doc(user.uid).get();
+    const userData = snap.data() || {};
+    userPlan = userData.plan || 'free';
+    document.getElementById('plan-label').textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
+    const trial = getTrialStatus(userData);
+    applyTrialUI(trial);
+    if (!trial.access) return;
+    loadDashboard();
+  });
+
+  async function loadDashboard() {
+    const uid = currentUser.uid;
+    const [campaignsSnap, influencersSnap] = await Promise.all([
+      db.collection('users').doc(uid).collection('campaigns').orderBy('createdAt','desc').get(),
+      db.collection('users').doc(uid).collection('influencers').get()
+    ]);
+    cachedCampaigns = campaignsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('stat-campaigns').textContent = cachedCampaigns.filter(c => c.status === 'active').length;
+    document.getElementById('stat-influencers').textContent = influencersSnap.size;
+
+    let totalSpent = 0, totalReach = 0;
+    for (const c of cachedCampaigns) {
+      const deals = await db.collection('users').doc(uid).collection('campaigns').doc(c.id).collection('deals').get();
+      deals.forEach(d => {
+        const data = d.data();
+        if (data.stage === 'paid' || data.stage === 'posted') totalSpent += Number(data.amount) || 0;
+        totalReach += Number(data.reach) || 0;
+      });
+    }
+    document.getElementById('stat-spent').textContent = '$' + totalSpent.toLocaleString();
+    document.getElementById('stat-reach').textContent = fmtNum(totalReach);
+    renderCampaigns(cachedCampaigns);
+  }
+
+  function renderCampaigns(campaigns) {
+    const el = document.getElementById('campaigns-list');
+    if (!campaigns.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><h3>' + t('no_campaigns') + '</h3><p>' + t('no_campaigns_sub') + '</p></div>';
+      return;
+    }
+    el.innerHTML = '<div class="campaign-list">' + campaigns.map(c =>
+      '<div class="campaign-item" onclick="location.href=\'campaign.html?id=' + c.id + '\'">' +
+        '<div class="campaign-dot ' + c.status + '"></div>' +
+        '<div class="campaign-info">' +
+          '<div class="campaign-name">' + esc(c.name) + '</div>' +
+          '<div class="campaign-meta">' + esc(c.description || t('no_description')) + ' · ' + t('label_budget_disp') + ' $' + Number(c.budget||0).toLocaleString() + '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+          '<span class="badge badge-' + (c.status||'active') + '">' + (c.status||'active') + '</span>' +
+          '<button class="btn-icon" title="Delete" onclick="event.stopPropagation();deleteCampaign(\'' + c.id + '\')">🗑</button>' +
+        '</div>' +
+      '</div>'
+    ).join('') + '</div>';
+  }
+
+  async function createCampaign() {
+    const name   = document.getElementById('c-name').value.trim();
+    const desc   = document.getElementById('c-desc').value.trim();
+    const budget = document.getElementById('c-budget').value;
+    if (!name) return toast(t('toast_enter_name'), 'error');
+
+    const limit = LIMITS[userPlan].campaigns;
+    const existing = await db.collection('users').doc(currentUser.uid).collection('campaigns').get();
+    if (existing.size >= limit) { toast(t('plan_limit_campaigns', { n: limit }), 'error'); return; }
+
+    await db.collection('users').doc(currentUser.uid).collection('campaigns').add({
+      name, description: desc, budget: Number(budget)||0,
+      status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('modal-campaign');
+    document.getElementById('c-name').value = '';
+    document.getElementById('c-desc').value = '';
+    document.getElementById('c-budget').value = '';
+    toast(t('toast_campaign_created'), 'success');
+    loadDashboard();
+  }
+
+  async function deleteCampaign(id) {
+    if (!confirm(t('confirm_delete_campaign'))) return;
+    await db.collection('users').doc(currentUser.uid).collection('campaigns').doc(id).delete();
+    toast(t('toast_campaign_deleted'), 'success');
+    loadDashboard();
+  }
+
+  function openNewCampaign() { document.getElementById('modal-campaign').classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function fmtNum(n) { return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n); }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.className = 'toast ' + (type||'success') + ' show';
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  document.addEventListener('langchange', () => { if (cachedCampaigns.length) renderCampaigns(cachedCampaigns); });
+  document.getElementById('modal-campaign').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-campaign'); });
+</script>
+</body>
+</html>

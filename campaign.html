@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campaign — CreatorFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Creator<span>Flow</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"   class="nav-link"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="plan-badge">
+        <span class="plan-name" id="plan-label">Free</span>
+      </div>
+      <div class="user-info">
+        <span class="user-email" id="user-email">—</span>
+        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="trial-banner" id="trial-banner">
+      <span>⏳ <strong><span data-days></span></strong> <span data-i18n="trial_text">left in your free trial — upgrade to keep access.</span></span>
+      <button class="btn btn-primary btn-sm" data-i18n="btn_upgrade_now" onclick="upgradePlan('pro')">Upgrade now</button>
+    </div>
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="dashboard.html" class="btn btn-ghost btn-sm" data-i18n="btn_back">← Back</a>
+        <div>
+          <h1 id="campaign-name">Loading…</h1>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px" id="campaign-meta"></div>
+        </div>
+      </div>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="font-size:13px;color:var(--muted)"><span data-i18n="label_budget_disp">Budget:</span> <strong id="budget-display" style="color:var(--accent)">—</strong></div>
+        <div style="font-size:13px;color:var(--muted)"><span data-i18n="label_spent_disp">Spent:</span> <strong id="spent-display" style="color:var(--green)">—</strong></div>
+        <button class="btn btn-primary" data-i18n="btn_add_deal" onclick="openAddDeal()">+ Add Deal</button>
+      </div>
+    </div>
+
+    <div class="page-content" style="padding:20px 28px">
+      <div class="kanban-wrap" id="kanban"></div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-deal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="deal-modal-title">Add Deal</span>
+      <button class="modal-close" onclick="closeModal('modal-deal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" id="influencer-select-group">
+        <label class="form-label" data-i18n="label_select_inf">Select Influencer</label>
+        <select id="d-influencer">
+          <option value="" data-i18n="ph_select_inf">— choose from your database —</option>
+        </select>
+        <div class="form-hint"><span data-i18n="hint_inf_pre">Add influencers first in the</span> <a href="influencers.html" style="color:var(--accent)" data-i18n="hint_inf_link">Influencers page</a></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_deal_amount">Deal Amount ($)</label>
+          <input type="number" id="d-amount" placeholder="500" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="label_deadline">Deadline</label>
+          <input type="date" id="d-deadline">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_stage">Stage</label>
+        <select id="d-stage">
+          <option value="found"       data-i18n="stage_found">Found</option>
+          <option value="contacted"   data-i18n="stage_contacted">Contacted</option>
+          <option value="negotiating" data-i18n="stage_negotiating">Negotiating</option>
+          <option value="agreed"      data-i18n="stage_agreed">Agreed</option>
+          <option value="posted"      data-i18n="stage_posted">Posted</option>
+          <option value="paid"        data-i18n="stage_paid">Paid</option>
+        </select>
+      </div>
+      <div class="form-group" id="posturl-group" style="display:none">
+        <label class="form-label" data-i18n="label_post_url">Post URL</label>
+        <input type="text" id="d-posturl" data-i18n-ph="ph_post_url" placeholder="https://instagram.com/p/…">
+      </div>
+      <div class="form-group" id="reach-group" style="display:none">
+        <label class="form-label" data-i18n="label_actual_reach">Actual Reach (views/impressions)</label>
+        <input type="number" id="d-reach" data-i18n-ph="ph_reach" placeholder="45000">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_notes">Notes</label>
+        <textarea id="d-notes" data-i18n-ph="ph_notes_deal" placeholder="Any details about this deal…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="delete-deal-btn" style="display:none;margin-right:auto" data-i18n="btn_delete_deal" onclick="deleteDeal()">Delete deal</button>
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeModal('modal-deal')">Cancel</button>
+      <button class="btn btn-primary" data-i18n="btn_save" onclick="saveDeal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="i18n.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="firebase-config.js"></script>
+<script src="trial.js"></script>
+<script>
+  function getStages() {
+    return [
+      { key: 'found',       label: t('stage_found'),       color: 'var(--faint)' },
+      { key: 'contacted',   label: t('stage_contacted'),   color: 'var(--blue)' },
+      { key: 'negotiating', label: t('stage_negotiating'), color: 'var(--yellow)' },
+      { key: 'agreed',      label: t('stage_agreed'),      color: 'var(--accent)' },
+      { key: 'posted',      label: t('stage_posted'),      color: 'var(--green)' },
+      { key: 'paid',        label: t('stage_paid'),        color: 'var(--cyan)' },
+    ];
+  }
+
+  let currentUser = null, campaignId = null, allDeals = [], allInfluencers = [], editingDealId = null;
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) return location.href = 'index.html';
+    currentUser = user;
+    document.getElementById('user-email').textContent = user.email;
+
+    campaignId = new URLSearchParams(location.search).get('id');
+    if (!campaignId) return location.href = 'dashboard.html';
+
+    const [campSnap, infSnap, planSnap] = await Promise.all([
+      db.collection('users').doc(user.uid).collection('campaigns').doc(campaignId).get(),
+      db.collection('users').doc(user.uid).collection('influencers').get(),
+      db.collection('users').doc(user.uid).get()
+    ]);
+
+    if (!campSnap.exists) return location.href = 'dashboard.html';
+    const camp = campSnap.data();
+    document.title = camp.name + ' — CreatorFlow';
+    document.getElementById('campaign-name').textContent = camp.name;
+    document.getElementById('campaign-meta').textContent = camp.description || '';
+    document.getElementById('budget-display').textContent = '$' + Number(camp.budget||0).toLocaleString();
+
+    const userData = planSnap.data() || {};
+    const plan = userData.plan || 'free';
+    document.getElementById('plan-label').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+    const trial = getTrialStatus(userData);
+    applyTrialUI(trial);
+    if (!trial.access) return;
+
+    allInfluencers = infSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    populateInfluencerSelect();
+    loadDeals();
+  });
+
+  async function loadDeals() {
+    const snap = await db.collection('users').doc(currentUser.uid)
+      .collection('campaigns').doc(campaignId).collection('deals').orderBy('createdAt','asc').get();
+    allDeals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderKanban();
+    updateSpent();
+  }
+
+  function renderKanban() {
+    const stages = getStages();
+    const kanban = document.getElementById('kanban');
+    kanban.innerHTML = stages.map(s => {
+      const deals = allDeals.filter(d => d.stage === s.key);
+      return '<div class="kanban-col">' +
+        '<div class="kanban-col-header">' +
+          '<span class="kanban-col-title" style="color:' + s.color + '">' + s.label + '</span>' +
+          '<span class="kanban-col-count">' + deals.length + '</span>' +
+        '</div>' +
+        '<div class="kanban-body" id="col-' + s.key + '" data-stage="' + s.key + '">' +
+          deals.map(d => dealCard(d)).join('') +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    stages.forEach(s => {
+      Sortable.create(document.getElementById('col-' + s.key), {
+        group: 'deals',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd(evt) {
+          const dealId = evt.item.dataset.id;
+          const newStage = evt.to.dataset.stage;
+          updateDealStage(dealId, newStage);
+        }
+      });
+    });
+  }
+
+  function dealCard(d) {
+    const today = new Date().toISOString().slice(0,10);
+    const overdue = d.deadline && d.deadline < today && d.stage !== 'paid';
+    return '<div class="deal-card stage-' + d.stage + '" data-id="' + d.id + '" onclick="openEditDeal(\'' + d.id + '\')">' +
+      '<div class="deal-influencer">' + esc(d.influencerName) + '</div>' +
+      '<div class="deal-handle">' + esc(d.influencerHandle || '') + '</div>' +
+      '<div class="deal-footer">' +
+        '<span class="deal-amount">$' + Number(d.amount||0).toLocaleString() + '</span>' +
+        (d.deadline ? '<span class="deal-deadline ' + (overdue ? 'deal-overdue' : '') + '">' + (overdue ? '⚠ ' : '') + d.deadline + '</span>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  async function updateDealStage(dealId, newStage) {
+    await db.collection('users').doc(currentUser.uid)
+      .collection('campaigns').doc(campaignId).collection('deals').doc(dealId).update({ stage: newStage });
+    const deal = allDeals.find(d => d.id === dealId);
+    if (deal) deal.stage = newStage;
+    updateSpent();
+    const stages = getStages();
+    stages.forEach(s => {
+      const col = document.getElementById('col-' + s.key);
+      if (col) {
+        const count = col.querySelectorAll('.deal-card').length;
+        col.previousElementSibling.querySelector('.kanban-col-count').textContent = count;
+      }
+    });
+  }
+
+  function updateSpent() {
+    const spent = allDeals.filter(d => d.stage === 'paid' || d.stage === 'posted').reduce((a, d) => a + Number(d.amount||0), 0);
+    document.getElementById('spent-display').textContent = '$' + spent.toLocaleString();
+  }
+
+  function populateInfluencerSelect() {
+    const sel = document.getElementById('d-influencer');
+    sel.innerHTML = '<option value="">' + t('ph_select_inf') + '</option>' +
+      allInfluencers.map(i => '<option value="' + i.id + '">' + esc(i.name) + ' (' + i.handle + ')</option>').join('');
+  }
+
+  function openAddDeal() {
+    editingDealId = null;
+    document.getElementById('deal-modal-title').textContent = t('modal_add_deal');
+    document.getElementById('delete-deal-btn').style.display = 'none';
+    document.getElementById('influencer-select-group').style.display = '';
+    document.getElementById('d-influencer').value = '';
+    document.getElementById('d-amount').value = '';
+    document.getElementById('d-deadline').value = '';
+    document.getElementById('d-stage').value = 'found';
+    document.getElementById('d-notes').value = '';
+    document.getElementById('d-posturl').value = '';
+    document.getElementById('d-reach').value = '';
+    togglePostFields('found');
+    document.getElementById('modal-deal').classList.add('open');
+  }
+
+  function openEditDeal(id) {
+    const deal = allDeals.find(d => d.id === id);
+    if (!deal) return;
+    editingDealId = id;
+    document.getElementById('deal-modal-title').textContent = t('modal_edit_deal');
+    document.getElementById('delete-deal-btn').style.display = '';
+    document.getElementById('influencer-select-group').style.display = 'none';
+    document.getElementById('d-amount').value   = deal.amount || '';
+    document.getElementById('d-deadline').value = deal.deadline || '';
+    document.getElementById('d-stage').value    = deal.stage || 'found';
+    document.getElementById('d-notes').value    = deal.notes || '';
+    document.getElementById('d-posturl').value  = deal.postUrl || '';
+    document.getElementById('d-reach').value    = deal.reach || '';
+    togglePostFields(deal.stage);
+    document.getElementById('modal-deal').classList.add('open');
+  }
+
+  document.getElementById('d-stage').addEventListener('change', e => togglePostFields(e.target.value));
+
+  function togglePostFields(stage) {
+    const show = stage === 'posted' || stage === 'paid';
+    document.getElementById('posturl-group').style.display = show ? '' : 'none';
+    document.getElementById('reach-group').style.display   = show ? '' : 'none';
+  }
+
+  async function saveDeal() {
+    const col = db.collection('users').doc(currentUser.uid).collection('campaigns').doc(campaignId).collection('deals');
+
+    if (!editingDealId) {
+      const infId = document.getElementById('d-influencer').value;
+      if (!infId) return toast(t('toast_select_inf'), 'error');
+      const inf = allInfluencers.find(i => i.id === infId);
+      await col.add({
+        influencerId:     infId,
+        influencerName:   inf.name,
+        influencerHandle: inf.handle,
+        platform:         inf.platform,
+        stage:    document.getElementById('d-stage').value,
+        amount:   Number(document.getElementById('d-amount').value) || 0,
+        deadline: document.getElementById('d-deadline').value,
+        postUrl:  document.getElementById('d-posturl').value.trim(),
+        reach:    Number(document.getElementById('d-reach').value) || 0,
+        notes:    document.getElementById('d-notes').value.trim(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await col.doc(editingDealId).update({
+        stage:    document.getElementById('d-stage').value,
+        amount:   Number(document.getElementById('d-amount').value) || 0,
+        deadline: document.getElementById('d-deadline').value,
+        postUrl:  document.getElementById('d-posturl').value.trim(),
+        reach:    Number(document.getElementById('d-reach').value) || 0,
+        notes:    document.getElementById('d-notes').value.trim(),
+      });
+    }
+
+    closeModal('modal-deal');
+    toast(editingDealId ? t('toast_deal_updated') : t('toast_deal_added'), 'success');
+    loadDeals();
+  }
+
+  async function deleteDeal() {
+    if (!confirm(t('confirm_delete_deal'))) return;
+    await db.collection('users').doc(currentUser.uid)
+      .collection('campaigns').doc(campaignId).collection('deals').doc(editingDealId).delete();
+    closeModal('modal-deal');
+    toast(t('toast_deal_deleted'), 'success');
+    loadDeals();
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.className = 'toast ' + (type||'success') + ' show';
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  document.addEventListener('langchange', () => {
+    populateInfluencerSelect();
+    renderKanban();
+  });
+  document.getElementById('modal-deal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-deal'); });
+</script>
+</body>
+</html>

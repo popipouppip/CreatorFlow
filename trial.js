@@ -22,7 +22,7 @@ async function ensureTrialStarted(uid, userData) {
 function applyTrialUI(status) {
   // Update plan label
   const label = document.getElementById('plan-label');
-  if (label && status.trial) label.textContent = `Trial (${status.daysLeft}d)`;
+  if (label && status.trial) label.textContent = t('trial_label', { days: status.daysLeft });
 
   if (status.access && status.trial) {
     const el = document.getElementById('trial-banner');
@@ -84,7 +84,8 @@ function buildUpgradeModal() {
           </ul>
           <button class="btn btn-primary" style="width:100%" onclick="upgradePlan('pro')">${t('btn_get_pro')}</button>
         </div>
-        <div class="upgrade-plan-card">
+        <div class="upgrade-plan-card agency-card">
+          <div class="up-badge-agency">★ Premium</div>
           <div class="up-name">Agency</div>
           <div class="up-price">$34.99<span>/mo</span></div>
           <div class="up-desc">${t('up_agency_desc')}</div>

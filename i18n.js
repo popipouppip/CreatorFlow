@@ -129,6 +129,7 @@ const LANGS = {
     no_deals_yet:          'No deals yet',
 
     // trial banner
+    trial_label:     'Free trial · {days}d left',
     trial_text:      'left in your free trial — upgrade to keep access.',
     btn_upgrade_now: 'Upgrade now',
 
@@ -390,6 +391,7 @@ const LANGS = {
     no_deal_data:          'Данных о сделках нет',
     no_deals_yet:          'Сделок пока нет',
 
+    trial_label:     'Пробный период · {days}д',
     trial_text:      'осталось в пробном периоде — обновите тариф.',
     btn_upgrade_now: 'Обновить',
 

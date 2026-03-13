@@ -577,6 +577,33 @@ tbody tr:hover td { background: var(--surface2); }
   border-color: var(--accent);
   background: var(--surface2);
 }
+.upgrade-plan-card.agency-card {
+  background: #0a0a0a;
+  border-color: #a07840;
+  color: #f5f0e8;
+}
+.upgrade-plan-card.agency-card .up-name,
+.upgrade-plan-card.agency-card .up-price { color: #f5f0e8; }
+.upgrade-plan-card.agency-card .up-price span { color: #b0a898; }
+.upgrade-plan-card.agency-card .up-desc,
+.upgrade-plan-card.agency-card .up-features li { color: #b0a898; }
+.up-badge-agency {
+  display: inline-block;
+  background: linear-gradient(135deg, #c9a55a, #a07840);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.upgrade-plan-card.agency-card .btn-ghost {
+  border-color: #a07840;
+  color: #f5f0e8;
+}
+.upgrade-plan-card.agency-card .btn-ghost:hover { background: rgba(192,150,90,0.15); }
 .up-badge {
   display: inline-block;
   background: var(--accent);

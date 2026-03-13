@@ -121,7 +121,8 @@ auth.onAuthStateChanged(user => {
     const data = snap.data() || {};
     const plan = data.plan || 'free';
 
-    document.getElementById('plan-label').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+    const planLabel = document.getElementById('plan-label');
+    if (planLabel) planLabel.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
 
     const trial = getTrialStatus(data);
 

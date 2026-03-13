@@ -2,7 +2,7 @@ const Stripe = require('stripe');
 
 const PRICES = {
   pro:    process.env.STRIPE_PRICE_PRO,
-  agency: process.env.STRIPE_PRICE_MAXIMUM,
+  agency: process.env.STRIPE_PRICE_AGENCY,
 };
 
 module.exports = async (req, res) => {

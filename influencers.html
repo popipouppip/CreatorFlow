@@ -193,7 +193,7 @@
 <script src="trial.js"></script>
 <script>
   const LIMITS = { free: 10, pro: 100, agency: Infinity };
-  let currentUser = null, userPlan = 'free', allInfluencers = [], editingId = null;
+  var currentUser = null, userPlan = 'free', allInfluencers = [], editingId = null;
 
   auth.onAuthStateChanged(async user => {
     if (!user) return location.href = 'index.html';

@@ -139,7 +139,7 @@
   Chart.defaults.color = '#737373';
   Chart.defaults.borderColor = '#e5e5e5';
 
-  let currentUser = null, allData = [], cachedCamps = [], cachedDealsBycamp = {};
+  var currentUser = null, allData = [], cachedCamps = [], cachedDealsBycamp = {};
   let chartCampaigns = null, chartStages = null;
 
   auth.onAuthStateChanged(async user => {

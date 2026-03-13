@@ -134,7 +134,7 @@
     ];
   }
 
-  let currentUser = null, campaignId = null, allDeals = [], allInfluencers = [], editingDealId = null;
+  var currentUser = null, campaignId = null, allDeals = [], allInfluencers = [], editingDealId = null;
 
   auth.onAuthStateChanged(async user => {
     if (!user) return location.href = 'index.html';

@@ -119,7 +119,7 @@
 <script src="trial.js"></script>
 <script>
   const LIMITS = { free: { campaigns: 1, influencers: 10 }, pro: { campaigns: 10, influencers: 100 }, agency: { campaigns: Infinity, influencers: Infinity } };
-  let currentUser = null, userPlan = 'free', cachedCampaigns = [];
+  var currentUser = null, userPlan = 'free', cachedCampaigns = [];
 
   auth.onAuthStateChanged(async user => {
     if (!user) return location.href = 'index.html';

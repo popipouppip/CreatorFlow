@@ -1,14 +1,16 @@
 // Shared trial helper — included in all app pages
 
+let _cfPlan = 'free';
+
 function getTrialStatus(userData) {
   const plan = userData?.plan || 'free';
-  if (plan !== 'free') return { access: true };
+  if (plan !== 'free') return { access: true, plan };
 
   const ts = userData?.trialStartedAt?.toDate?.();
-  if (!ts) return { access: true, trial: true, daysLeft: 14 }; // no date yet = fresh trial
+  if (!ts) return { access: true, trial: true, daysLeft: 14, plan: 'free' };
 
   const daysLeft = Math.ceil((ts.getTime() + 14 * 86400000 - Date.now()) / 86400000);
-  return daysLeft > 0 ? { access: true, trial: true, daysLeft } : { access: false, daysLeft: 0 };
+  return daysLeft > 0 ? { access: true, trial: true, daysLeft, plan: 'free' } : { access: false, daysLeft: 0, plan: 'free' };
 }
 
 async function ensureTrialStarted(uid, userData) {
@@ -20,8 +22,9 @@ async function ensureTrialStarted(uid, userData) {
 }
 
 function applyTrialUI(status) {
+  _cfPlan = status.plan || 'free';
   const btn = document.getElementById('upgrade-btn');
-  if (btn) btn.style.display = status.access && !status.trial ? 'none' : '';
+  if (btn) btn.style.display = (status.plan && status.plan !== 'free') ? 'none' : '';
 
   if (status.access && status.trial) {
     const el = document.getElementById('trial-banner');
@@ -69,6 +72,8 @@ function buildUpgradeModal() {
         <div class="upgrade-feature-item"><span class="uf-icon">⚡</span><div><strong>${t('uf_drag')}</strong><p>${t('uf_drag_desc')}</p></div></div>
       </div>
       <div class="upgrade-plans-row">
+        ${_cfPlan === 'agency' ? `<div style="text-align:center;padding:32px;width:100%"><div style="font-size:32px;margin-bottom:12px">🎉</div><div style="font-weight:600;font-size:18px;margin-bottom:8px">You're on the Agency plan</div><div style="color:var(--muted)">You already have full access to all features.</div></div>` : ''}
+        ${_cfPlan !== 'pro' && _cfPlan !== 'agency' ? `
         <div class="upgrade-plan-card highlighted">
           <div class="up-badge">${t('up_most_popular')}</div>
           <div class="up-name">Pro</div>
@@ -82,7 +87,8 @@ function buildUpgradeModal() {
             <li>✓ ${t('up_pro_f5')}</li>
           </ul>
           <button class="btn btn-primary" style="width:100%" onclick="upgradePlan('pro')">${t('btn_get_pro')}</button>
-        </div>
+        </div>` : ''}
+        ${_cfPlan !== 'agency' ? `
         <div class="upgrade-plan-card agency-card">
           <div class="up-badge-agency">★ Premium</div>
           <div class="up-name">Agency</div>
@@ -96,7 +102,7 @@ function buildUpgradeModal() {
             <li>✓ ${t('up_agency_f5')}</li>
           </ul>
           <button class="btn btn-ghost" style="width:100%" onclick="upgradePlan('agency')">${t('btn_get_agency')}</button>
-        </div>
+        </div>` : ''}
       </div>
       <p style="text-align:center;font-size:12px;color:var(--faint);margin-top:16px">${t('upgrade_footer')}</p>
     </div>`;

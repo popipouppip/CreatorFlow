@@ -4,6 +4,7 @@ const LANGS = {
     nav_dashboard:   'Dashboard',
     nav_influencers: 'Influencers',
     nav_analytics:   'Analytics',
+    nav_account:     'Account',
     upgrade:         'Upgrade →',
     logout:          'Out',
 
@@ -234,6 +235,7 @@ const LANGS = {
     nav_dashboard:   'Дашборд',
     nav_influencers: 'Инфлюенсеры',
     nav_analytics:   'Аналитика',
+    nav_account:     'Аккаунт',
     upgrade:         'Улучшить →',
     logout:          'Выйти',
 

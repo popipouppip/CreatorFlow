@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account — CreatorFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Creator<span>Flow</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"   class="nav-link"><span class="nav-icon">🏠</span> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link"><span class="nav-icon">👥</span> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><span class="nav-icon">📊</span> <span data-i18n="nav_analytics">Analytics</span></a>
+      <a href="account.html"     class="nav-link active"><span class="nav-icon">👤</span> <span data-i18n="nav_account">Account</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="plan-badge">
+        <span class="plan-name" id="plan-label">—</span>
+        <a href="#" class="plan-upgrade" id="upgrade-link" onclick="event.preventDefault();openUpgradeModal()">Upgrade →</a>
+      </div>
+      <div class="user-info">
+        <span class="user-email" id="user-email">—</span>
+        <button class="logout-btn" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h1 data-i18n="nav_account">Account</h1>
+    </div>
+    <div class="page-content">
+
+      <div class="account-grid">
+
+        <!-- Plan card -->
+        <div class="card account-card">
+          <div class="account-card-header">
+            <span class="account-card-title">Subscription</span>
+            <span class="plan-chip" id="plan-chip">—</span>
+          </div>
+          <div class="account-plan-info" id="plan-info">
+            <div class="account-loading">Loading...</div>
+          </div>
+          <div class="account-card-actions" id="plan-actions"></div>
+        </div>
+
+        <!-- Profile card -->
+        <div class="card account-card">
+          <div class="account-card-header">
+            <span class="account-card-title">Profile</span>
+          </div>
+          <div class="account-profile">
+            <div class="account-avatar" id="avatar-initials">—</div>
+            <div>
+              <div class="account-email-big" id="profile-email">—</div>
+              <div class="account-since" id="profile-since">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Plan features -->
+      <div class="card" id="features-card" style="display:none">
+        <div class="card-header">
+          <span class="card-title">What's included in your plan</span>
+        </div>
+        <div class="account-features" id="plan-features"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="i18n.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="trial.js"></script>
+<script>
+const PLAN_FEATURES = {
+  free: [
+    '✓ 1 campaign',
+    '✓ Up to 10 influencers',
+    '✓ Basic deal pipeline',
+    '✗ Analytics (Pro+)',
+    '✗ CSV export (Pro+)',
+    '✗ Unlimited outreach templates (Pro+)',
+  ],
+  pro: [
+    '✓ Up to 10 campaigns',
+    '✓ Up to 100 influencers',
+    '✓ Full analytics + CSV export',
+    '✓ Unlimited outreach templates',
+    '✓ Drag & drop deals',
+    '✓ Priority support',
+  ],
+  agency: [
+    '✓ Unlimited campaigns',
+    '✓ Unlimited influencers',
+    '✓ Full analytics + CSV export',
+    '✓ Up to 5 team members',
+    '✓ White-label reports',
+    '✓ Dedicated support',
+  ],
+};
+
+auth.onAuthStateChanged(user => {
+  if (!user) return location.href = 'index.html';
+  document.getElementById('user-email').textContent = user.email;
+  document.getElementById('profile-email').textContent = user.email;
+  const initials = user.email.slice(0, 2).toUpperCase();
+  document.getElementById('avatar-initials').textContent = initials;
+
+  db.collection('users').doc(user.uid).onSnapshot(snap => {
+    const data = snap.data() || {};
+    const plan = data.plan || 'free';
+
+    document.getElementById('plan-label').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+
+    const trial = getTrialStatus(data);
+
+    // Plan chip
+    const chip = document.getElementById('plan-chip');
+    chip.textContent = plan === 'free' ? (trial.trial ? 'Trial' : 'Free') : plan.charAt(0).toUpperCase() + plan.slice(1);
+    chip.className = 'plan-chip plan-chip-' + (plan === 'free' ? 'free' : 'paid');
+
+    // Plan info
+    const info = document.getElementById('plan-info');
+    if (plan === 'free') {
+      if (trial.trial) {
+        const color = trial.daysLeft <= 3 ? '#dc2626' : '#ca8a04';
+        info.innerHTML = `<div class="account-trial-info" style="border-color:${color}20;background:${color}08">
+          <div class="account-trial-days" style="color:${color}">${trial.daysLeft} days left</div>
+          <div class="account-trial-sub">Your free trial ends soon. Upgrade to keep access.</div>
+        </div>`;
+      } else {
+        info.innerHTML = '<div class="account-trial-info" style="border-color:#dc262620;background:#dc262608"><div class="account-trial-days" style="color:#dc2626">Trial expired</div><div class="account-trial-sub">Upgrade to regain access to all features.</div></div>';
+      }
+    } else {
+      info.innerHTML = `<div class="account-active-plan"><div class="account-active-dot"></div><span>Active subscription</span></div>`;
+    }
+
+    // Actions
+    const actions = document.getElementById('plan-actions');
+    if (plan === 'free') {
+      actions.innerHTML = `
+        <button class="btn btn-primary" onclick="openUpgradeModal()">Upgrade plan →</button>`;
+    } else {
+      actions.innerHTML = `<span class="account-manage-note">To cancel or manage billing, contact support.</span>`;
+    }
+
+    // Features
+    const featCard = document.getElementById('features-card');
+    featCard.style.display = 'block';
+    const features = PLAN_FEATURES[plan] || PLAN_FEATURES.free;
+    document.getElementById('plan-features').innerHTML = features.map(f =>
+      `<div class="account-feature-item ${f.startsWith('✗') ? 'locked' : ''}">${f}</div>`
+    ).join('');
+
+    // Since
+    if (data.createdAt) {
+      const d = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+      document.getElementById('profile-since').textContent = 'Member since ' + d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+
+    // Show upgrade link only if free
+    document.getElementById('upgrade-link').style.display = plan === 'free' ? '' : 'none';
+  });
+});
+</script>
+</body>
+</html>

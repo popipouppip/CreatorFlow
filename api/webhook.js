@@ -1,5 +1,6 @@
-const Stripe = require('stripe');
-const admin  = require('firebase-admin');
+const Stripe   = require('stripe');
+const admin    = require('firebase-admin');
+const getRawBody = require('raw-body');
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -14,13 +15,7 @@ module.exports = async (req, res) => {
   const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
   const sig    = req.headers['stripe-signature'];
 
-  // Collect raw body for Stripe signature verification
-  const rawBody = await new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
-  });
+  const rawBody = await getRawBody(req);
 
   let event;
   try {

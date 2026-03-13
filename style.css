@@ -1065,3 +1065,26 @@ tbody tr:hover td { background: var(--surface2); }
   color: #f59e0b;
   margin-bottom: 8px;
 }
+
+/* Demo section on landing */
+.demo-section {
+  background: linear-gradient(135deg, #f59e0b0a 0%, #6366f10a 100%);
+  border-top: 1px solid var(--border);
+  padding: 48px 40px;
+}
+.demo-section-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.demo-section-icon { font-size: 40px; flex-shrink: 0; }
+.demo-section-title { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+.demo-section-sub { color: var(--muted); margin: 0; font-size: 14px; max-width: 500px; }
+.demo-section-inner .btn { flex-shrink: 0; white-space: nowrap; margin-left: auto; }
+@media (max-width: 640px) {
+  .demo-section { padding: 32px 20px; }
+  .demo-section-inner .btn { margin-left: 0; width: 100%; }
+}

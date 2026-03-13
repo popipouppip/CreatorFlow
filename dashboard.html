@@ -133,21 +133,20 @@
     currentUser = user;
     document.getElementById('user-email').textContent = user.email;
 
+    const params = new URLSearchParams(location.search);
+    let justUpgraded = !!params.get('upgraded');
+    if (justUpgraded) history.replaceState({}, '', 'dashboard.html');
+
     db.collection('users').doc(user.uid).onSnapshot(snap => {
       const userData = snap.data() || {};
-      const newPlan = userData.plan || 'free';
-      const planChanged = newPlan !== userPlan && newPlan !== 'free';
-      userPlan = newPlan;
+      userPlan = userData.plan || 'free';
       const planLabel = document.getElementById('plan-label'); if (planLabel) planLabel.textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
       const trial = getTrialStatus(userData);
       applyTrialUI(trial);
       if (!trial.access) return;
-      if (planChanged) showUpgradeSuccess(userPlan);
+      if (justUpgraded && userPlan !== 'free') { showUpgradeSuccess(userPlan); justUpgraded = false; }
       loadDashboard();
     });
-
-    const params = new URLSearchParams(location.search);
-    if (params.get('upgraded')) history.replaceState({}, '', 'dashboard.html');
   });
 
   async function loadDashboard() {

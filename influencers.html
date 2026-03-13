@@ -200,7 +200,7 @@
     const snap = await db.collection('users').doc(user.uid).get();
     const userData = snap.data() || {};
     userPlan = userData.plan || 'free';
-    document.getElementById('plan-label').textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
+    const planLabelEl = document.getElementById('plan-label'); if (planLabelEl) planLabelEl.textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
     const trial = getTrialStatus(userData);
     applyTrialUI(trial);
     if (!trial.access) return;

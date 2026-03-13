@@ -118,9 +118,12 @@ async function upgradePlan(plan) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan, userId: currentUser.uid, email: currentUser.email })
     });
-    const { url } = await res.json();
-    window.location.href = url;
-  } catch {
-    alert('Something went wrong. Please try again.');
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { alert('API error: ' + text); return; }
+    if (!res.ok) { alert('Error: ' + (data.error || text)); return; }
+    window.location.href = data.url;
+  } catch(e) {
+    alert('Something went wrong: ' + e.message);
   }
 }

@@ -173,7 +173,7 @@
     const allDeals = allData;
     const stageLabels = [t('stage_found'), t('stage_contacted'), t('stage_negotiating'), t('stage_agreed'), t('stage_posted'), t('stage_paid')];
     const stageKeys   = ['found','contacted','negotiating','agreed','posted','paid'];
-    const stageColors = ['#a3a3a3','#d4d4d4','#737373','#404040','#262626','#0a0a0a'];
+    const stageColors = ['#6366f1','#38bdf8','#f59e0b','#10b981','#8b5cf6','#ef4444'];
 
     const paid = allDeals.filter(d => d.stage === 'paid' || d.stage === 'posted');
     const totalSpent = paid.reduce((a, d) => a + Number(d.amount||0), 0);

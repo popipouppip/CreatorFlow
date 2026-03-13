@@ -241,8 +241,8 @@
         '<td class="td-num">' + fmtNum(i.followers) + '</td>' +
         '<td style="font-size:12px;color:var(--muted)">' + esc(i.contact||'—') + '</td>' +
         '<td><div class="td-actions">' +
-          '<button class="btn-icon" title="Edit" onclick="openEdit(\'' + i.id + '\')">✏️</button>' +
-          '<button class="btn-icon" title="Delete" onclick="deleteInfluencer(\'' + i.id + '\')">🗑</button>' +
+          '<button class="btn-icon" title="Edit" onclick="openEdit(\'' + i.id + '\')"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>' +
+          '<button class="btn-icon" title="Delete" onclick="deleteInfluencer(\'' + i.id + '\')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>' +
         '</div></td>' +
       '</tr>'
     ).join('');

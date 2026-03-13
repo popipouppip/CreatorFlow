@@ -40,9 +40,9 @@
     <h2 class="demo-title" data-i18n="demo_title">Everything in one clean interface</h2>
     <p class="demo-sub-text" data-i18n="demo_sub">See how CreatorFlow looks with real campaigns running</p>
     <div class="demo-tabs-row">
-      <button class="demo-tab active" data-i18n="demo_tab_dashboard" onclick="showDemo('dashboard',this)">🏠 Dashboard</button>
-      <button class="demo-tab" data-i18n="demo_tab_kanban" onclick="showDemo('kanban',this)">📋 Pipeline</button>
-      <button class="demo-tab" data-i18n="demo_tab_analytics" onclick="showDemo('analytics',this)">📊 Analytics</button>
+      <button class="demo-tab active" data-i18n="demo_tab_dashboard" onclick="showDemo('dashboard',this)"><i data-lucide="layout-dashboard" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px"></i>Dashboard</button>
+      <button class="demo-tab" data-i18n="demo_tab_kanban" onclick="showDemo('kanban',this)"><i data-lucide="git-branch" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px"></i>Pipeline</button>
+      <button class="demo-tab" data-i18n="demo_tab_analytics" onclick="showDemo('analytics',this)"><i data-lucide="bar-chart-2" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px"></i>Analytics</button>
     </div>
     <div class="browser-mockup">
       <div class="browser-bar">
@@ -53,9 +53,9 @@
         <div class="m-sidebar">
           <div class="m-logo">Creator<span>Flow</span></div>
           <div class="m-nav">
-            <div class="m-nav-item active" id="mnav-dashboard">🏠 Dashboard</div>
-            <div class="m-nav-item" id="mnav-kanban">📋 Campaigns</div>
-            <div class="m-nav-item" id="mnav-analytics">📊 Analytics</div>
+            <div class="m-nav-item active" id="mnav-dashboard"><i data-lucide="layout-dashboard" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px"></i>Dashboard</div>
+            <div class="m-nav-item" id="mnav-kanban"><i data-lucide="git-branch" style="width:13px;height:13px;vertical-align:-2px;margin-right:4px"></i>Campaigns</div>
+            <div class="m-nav-item" id="mnav-analytics"><i data-lucide="bar-chart-2" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px"></i>Analytics</div>
           </div>
           <div class="m-sidebar-footer">
             <div class="m-plan">Trial (12d)</div>
@@ -163,32 +163,32 @@
   <!-- FEATURES -->
   <section class="features" id="features">
     <div class="feature-card">
-      <div class="feature-icon">📋</div>
+      <div class="feature-icon"><i data-lucide="clipboard-list"></i></div>
       <h3 data-i18n="feat_title1">Deal Pipeline</h3>
       <p data-i18n="feat_desc1">Drag deals across 6 stages: Found → Contacted → Negotiating → Agreed → Posted → Paid. Always know where every deal stands.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">👥</div>
+      <div class="feature-icon"><i data-lucide="users"></i></div>
       <h3 data-i18n="feat_title2">Influencer Database</h3>
       <p data-i18n="feat_desc2">Build your own searchable database of creators — platform, niche, follower count, contact info, all in one place.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">📊</div>
+      <div class="feature-icon"><i data-lucide="bar-chart-2"></i></div>
       <h3 data-i18n="feat_title3">Campaign Analytics</h3>
       <p data-i18n="feat_desc3">Track total spend, reach, and CPM per campaign. Instantly see which influencers give you the best ROI.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">✉️</div>
+      <div class="feature-icon"><i data-lucide="mail"></i></div>
       <h3 data-i18n="feat_title4">Outreach Templates</h3>
       <p data-i18n="feat_desc4">Send first contact and follow-up messages in seconds with plug-and-play templates that actually get replies.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">📥</div>
+      <div class="feature-icon"><i data-lucide="download"></i></div>
       <h3 data-i18n="feat_title5">CSV Export</h3>
       <p data-i18n="feat_desc5">Export all your campaign data — deals, influencers, spend, reach — to Excel or Google Sheets in one click.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">⚡</div>
+      <div class="feature-icon"><i data-lucide="zap"></i></div>
       <h3 data-i18n="feat_title6">Real-time Sync</h3>
       <p data-i18n="feat_desc6">Every change saves instantly. Your deal board, amounts, and analytics are always up to date.</p>
     </div>
@@ -425,5 +425,6 @@
     return map[code] || t('err_generic');
   }
 </script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>

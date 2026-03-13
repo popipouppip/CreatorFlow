@@ -710,7 +710,8 @@ tbody tr:hover td { background: var(--surface2); }
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .feature-card:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-.feature-icon { font-size: 1.8rem; margin-bottom: 12px; }
+.feature-icon { margin-bottom: 14px; color: var(--accent); }
+.feature-icon svg { width: 28px; height: 28px; stroke-width: 1.75; }
 .feature-card h3 { font-size: 15px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
 .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 

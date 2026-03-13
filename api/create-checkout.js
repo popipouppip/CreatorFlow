@@ -14,14 +14,16 @@ module.exports = async (req, res) => {
 
     const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+    const siteUrl = (process.env.SITE_URL || 'https://creator-flow-beryl.vercel.app').trim().replace(/\/$/, '');
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
       customer_email: email,
       line_items: [{ price: PRICES[plan], quantity: 1 }],
       metadata: { userId, plan },
-      success_url: `${process.env.SITE_URL}/dashboard.html?upgraded=1`,
-      cancel_url:  `${process.env.SITE_URL}/dashboard.html`,
+      success_url: `${siteUrl}/dashboard.html?upgraded=1`,
+      cancel_url:  `${siteUrl}/dashboard.html`,
     });
 
     res.json({ url: session.url });

@@ -37,11 +37,11 @@ module.exports = async (req, res) => {
     console.log('Checkout meta:', { userId, plan, customer: session.customer });
     if (userId && plan) {
       try {
-        await db.collection('users').doc(userId).update({
+        await db.collection('users').doc(userId).set({
           plan,
           stripeCustomerId: session.customer,
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
+        }, { merge: true });
         console.log('Firestore updated:', userId, '->', plan);
       } catch (e) {
         console.error('Firestore error:', e.message);

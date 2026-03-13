@@ -37,6 +37,7 @@
         <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
       <button class="btn btn-primary" data-i18n="btn_add_influencer" onclick="openAdd()">+ Add Influencer</button>
     </div>
 
@@ -327,6 +328,14 @@
 
   document.addEventListener('langchange', () => renderTable());
   document.getElementById('modal-inf').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+  function exportCSV() {
+    if (!allInfluencers.length) return toast('No influencers to export', 'error');
+    const rows = [['Name','Platform','Handle','Niche','Followers','Contact','URL','Notes']];
+    allInfluencers.forEach(i => rows.push([i.name||'',i.platform||'',i.handle||'',i.niche||'',i.followers||0,i.contact||'',i.url||'',i.notes||'']));
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'influencers.csv'; a.click();
+  }
 </script>
 </body>
 </html>

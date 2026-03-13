@@ -46,6 +46,7 @@
       <div style="display:flex;gap:10px;align-items:center">
         <div style="font-size:13px;color:var(--muted)"><span data-i18n="label_budget_disp">Budget:</span> <strong id="budget-display" style="color:var(--accent)">—</strong></div>
         <div style="font-size:13px;color:var(--muted)"><span data-i18n="label_spent_disp">Spent:</span> <strong id="spent-display" style="color:var(--green)">—</strong></div>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
         <button class="btn btn-primary" data-i18n="btn_add_deal" onclick="openAddDeal()">+ Add Deal</button>
       </div>
     </div>
@@ -346,6 +347,14 @@
     renderKanban();
   });
   document.getElementById('modal-deal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-deal'); });
+
+  function exportCSV() {
+    if (!allDeals.length) return toast('No deals to export', 'error');
+    const rows = [['Influencer','Platform','Stage','Amount','Reach','Deadline','Post URL','Notes']];
+    allDeals.forEach(d => rows.push([d.influencerName||'',d.platform||'',d.stage||'',d.amount||0,d.reach||0,d.deadline||'',d.postUrl||'',d.notes||'']));
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'deals.csv'; a.click();
+  }
 </script>
 </body>
 </html>

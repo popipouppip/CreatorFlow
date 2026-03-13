@@ -37,6 +37,7 @@
         <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
       <button class="btn btn-primary" data-i18n="dash_new_campaign" onclick="openNewCampaign()">+ New Campaign</button>
     </div>
 
@@ -246,6 +247,14 @@
 
   document.addEventListener('langchange', () => { if (cachedCampaigns.length) renderCampaigns(cachedCampaigns); });
   document.getElementById('modal-campaign').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-campaign'); });
+
+  function exportCSV() {
+    if (!cachedCampaigns.length) return toast('No campaigns to export', 'error');
+    const rows = [['Name','Description','Budget','Status','Created']];
+    cachedCampaigns.forEach(c => rows.push([c.name||'',c.description||'',c.budget||0,c.status||'',c.createdAt?.toDate?.()?.toLocaleDateString('en-US')||'']));
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'campaigns.csv'; a.click();
+  }
 </script>
 </body>
 </html>

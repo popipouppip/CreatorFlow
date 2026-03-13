@@ -145,8 +145,8 @@
     if (!campaignId) return location.href = 'dashboard.html';
 
     const [campSnap, infSnap, planSnap] = await Promise.all([
-      db.collection('users').doc(user.uid).collection('campaigns').doc(campaignId).get(),
-      db.collection('users').doc(user.uid).collection('influencers').get(),
+      db.collection('users').doc(user.uid).collection(demoCol('campaigns')).doc(campaignId).get(),
+      db.collection('users').doc(user.uid).collection(demoCol('influencers')).get(),
       db.collection('users').doc(user.uid).get()
     ]);
 
@@ -171,7 +171,7 @@
 
   async function loadDeals() {
     const snap = await db.collection('users').doc(currentUser.uid)
-      .collection('campaigns').doc(campaignId).collection('deals').orderBy('createdAt','asc').get();
+      .collection(demoCol('campaigns')).doc(campaignId).collection('deals').orderBy('createdAt','asc').get();
     allDeals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderKanban();
     updateSpent();
@@ -223,7 +223,7 @@
 
   async function updateDealStage(dealId, newStage) {
     await db.collection('users').doc(currentUser.uid)
-      .collection('campaigns').doc(campaignId).collection('deals').doc(dealId).update({ stage: newStage });
+      .collection(demoCol('campaigns')).doc(campaignId).collection('deals').doc(dealId).update({ stage: newStage });
     const deal = allDeals.find(d => d.id === dealId);
     if (deal) deal.stage = newStage;
     updateSpent();
@@ -290,7 +290,7 @@
   }
 
   async function saveDeal() {
-    const col = db.collection('users').doc(currentUser.uid).collection('campaigns').doc(campaignId).collection('deals');
+    const col = db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).doc(campaignId).collection('deals');
 
     if (!editingDealId) {
       const infId = document.getElementById('d-influencer').value;
@@ -328,7 +328,7 @@
   async function deleteDeal() {
     if (!confirm(t('confirm_delete_deal'))) return;
     await db.collection('users').doc(currentUser.uid)
-      .collection('campaigns').doc(campaignId).collection('deals').doc(editingDealId).delete();
+      .collection(demoCol('campaigns')).doc(campaignId).collection('deals').doc(editingDealId).delete();
     closeModal('modal-deal');
     toast(t('toast_deal_deleted'), 'success');
     loadDeals();

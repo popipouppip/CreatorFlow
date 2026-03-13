@@ -156,11 +156,11 @@
 
   async function loadAnalytics() {
     const uid = currentUser.uid;
-    const campSnap = await db.collection('users').doc(uid).collection('campaigns').get();
+    const campSnap = await db.collection('users').doc(uid).collection(demoCol('campaigns')).get();
     cachedCamps = campSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     const dealPromises = cachedCamps.map(async c => {
-      const ds = await db.collection('users').doc(uid).collection('campaigns').doc(c.id).collection('deals').get();
+      const ds = await db.collection('users').doc(uid).collection(demoCol('campaigns')).doc(c.id).collection('deals').get();
       cachedDealsBycamp[c.id] = ds.docs.map(d => ({ id: d.id, campaignName: c.name, campaignId: c.id, ...d.data() }));
     });
     await Promise.all(dealPromises);

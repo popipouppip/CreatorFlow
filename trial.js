@@ -2,6 +2,39 @@
 
 let _cfPlan = 'free';
 
+// ── Demo mode ──────────────────────────────────────────────
+function isDemoMode() { return localStorage.getItem('cfDemo') === '1'; }
+function demoCol(name) { return isDemoMode() ? 'demo_' + name : name; }
+function enterDemoMode() { localStorage.setItem('cfDemo', '1'); location.reload(); }
+function exitDemoMode()  { localStorage.setItem('cfDemo', '0'); location.reload(); }
+
+let _demoConfirmCb = null;
+function openDemoConfirm(title, message, onConfirm) {
+  _demoConfirmCb = onConfirm;
+  const existing = document.getElementById('modal-demo-confirm');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'modal-demo-confirm';
+  el.className = 'modal-overlay open';
+  el.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
+      <div class="modal-header">
+        <span class="modal-title">${title}</span>
+        <button class="modal-close" onclick="document.getElementById('modal-demo-confirm').remove()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--muted);margin:0">${message}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-demo-confirm').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-demo-confirm').remove();_demoConfirmCb&&_demoConfirmCb()">Confirm</button>
+      </div>
+    </div>`;
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  document.body.appendChild(el);
+}
+// ──────────────────────────────────────────────────────────
+
 function getTrialStatus(userData) {
   const plan = userData?.plan || 'free';
   if (plan !== 'free') return { access: true, plan };
@@ -25,6 +58,19 @@ function applyTrialUI(status) {
   _cfPlan = status.plan || 'free';
   const btn = document.getElementById('upgrade-btn');
   if (btn) btn.style.display = (_cfPlan === 'free') ? '' : 'none';
+
+  // Demo banner in sidebar
+  let demoBar = document.getElementById('_demo-bar');
+  if (!demoBar) {
+    demoBar = document.createElement('div');
+    demoBar.id = '_demo-bar';
+    document.querySelector('.sidebar-bottom')?.prepend(demoBar);
+  }
+  if (isDemoMode()) {
+    demoBar.innerHTML = '<div class="demo-bar">🧪 Demo Mode <button class="btn btn-ghost btn-sm" onclick="exitDemoMode()" style="margin-left:8px;font-size:11px;padding:2px 8px">Exit</button></div>';
+  } else {
+    demoBar.innerHTML = '';
+  }
 
   if (status.access && status.trial) {
     const el = document.getElementById('trial-banner');

@@ -1051,3 +1051,17 @@ tbody tr:hover td { background: var(--surface2); }
   .features, .pricing { padding: 40px 20px; }
   .kanban-wrap { padding-bottom: 40px; }
 }
+
+/* Demo mode */
+.demo-bar {
+  display: flex;
+  align-items: center;
+  background: #f59e0b18;
+  border: 1px solid #f59e0b40;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f59e0b;
+  margin-bottom: 8px;
+}

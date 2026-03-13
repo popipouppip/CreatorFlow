@@ -38,7 +38,7 @@
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="btn btn-ghost btn-sm" onclick="seedDemo()" style="color:var(--muted)">🧪 Demo Data</button>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)">🧪 Demo Data</button>
       <button class="btn btn-primary" data-i18n="dash_new_campaign" onclick="openNewCampaign()">+ New Campaign</button>
     </div>
 
@@ -139,6 +139,9 @@
     let justUpgraded = !!params.get('upgraded');
     if (justUpgraded) history.replaceState({}, '', 'dashboard.html');
 
+    const demoBtn = document.getElementById('demo-toggle-btn');
+    if (demoBtn) demoBtn.textContent = isDemoMode() ? '🔴 Exit Demo' : '🧪 Demo Data';
+
     db.collection('users').doc(user.uid).onSnapshot(snap => {
       const userData = snap.data() || {};
       userPlan = userData.plan || 'free';
@@ -154,8 +157,8 @@
   async function loadDashboard() {
     const uid = currentUser.uid;
     const [campaignsSnap, influencersSnap] = await Promise.all([
-      db.collection('users').doc(uid).collection('campaigns').orderBy('createdAt','desc').get(),
-      db.collection('users').doc(uid).collection('influencers').get()
+      db.collection('users').doc(uid).collection(demoCol('campaigns')).orderBy('createdAt','desc').get(),
+      db.collection('users').doc(uid).collection(demoCol('influencers')).get()
     ]);
     cachedCampaigns = campaignsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('stat-campaigns').textContent = cachedCampaigns.filter(c => c.status === 'active').length;
@@ -163,7 +166,7 @@
 
     let totalSpent = 0, totalReach = 0;
     for (const c of cachedCampaigns) {
-      const deals = await db.collection('users').doc(uid).collection('campaigns').doc(c.id).collection('deals').get();
+      const deals = await db.collection('users').doc(uid).collection(demoCol('campaigns')).doc(c.id).collection('deals').get();
       deals.forEach(d => {
         const data = d.data();
         if (data.stage === 'paid' || data.stage === 'posted') totalSpent += Number(data.amount) || 0;
@@ -203,10 +206,10 @@
     if (!name) return toast(t('toast_enter_name'), 'error');
 
     const limit = LIMITS[userPlan].campaigns;
-    const existing = await db.collection('users').doc(currentUser.uid).collection('campaigns').get();
+    const existing = await db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).get();
     if (existing.size >= limit) { toast(t('plan_limit_campaigns', { n: limit }), 'error'); return; }
 
-    await db.collection('users').doc(currentUser.uid).collection('campaigns').add({
+    await db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).add({
       name, description: desc, budget: Number(budget)||0,
       status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -220,7 +223,7 @@
 
   async function deleteCampaign(id) {
     if (!confirm(t('confirm_delete_campaign'))) return;
-    await db.collection('users').doc(currentUser.uid).collection('campaigns').doc(id).delete();
+    await db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).doc(id).delete();
     toast(t('toast_campaign_deleted'), 'success');
     loadDashboard();
   }
@@ -249,12 +252,19 @@
   document.addEventListener('langchange', () => { if (cachedCampaigns.length) renderCampaigns(cachedCampaigns); });
   document.getElementById('modal-campaign').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-campaign'); });
 
+  function handleDemoBtn() {
+    if (isDemoMode()) {
+      openDemoConfirm('Exit Demo Mode', 'Switch back to your real data?', exitDemoMode);
+    } else {
+      openDemoConfirm('Enter Demo Mode', 'This will load sample data so you can explore the app. Your real data stays safe.', seedDemo);
+    }
+  }
+
   async function seedDemo() {
-    if (!confirm('Add demo data? This will add sample campaigns, influencers and deals.')) return;
     const uid = currentUser.uid;
     const ts  = firebase.firestore.FieldValue.serverTimestamp();
-    const infCol = db.collection('users').doc(uid).collection('influencers');
-    const camCol = db.collection('users').doc(uid).collection('campaigns');
+    const infCol = db.collection('users').doc(uid).collection('demo_influencers');
+    const camCol = db.collection('users').doc(uid).collection('demo_campaigns');
 
     const infs = [
       { name:'Emma Collins', platform:'instagram', handle:'@emmacollins', niche:'fashion', followers:128000, contact:'emma@gmail.com', url:'https://instagram.com/emmacollins', notes:'Great engagement', createdAt: ts },
@@ -279,8 +289,7 @@
     await Promise.all(deals1.map(d => cam1.collection('deals').add({ ...d, createdAt: ts })));
     await Promise.all(deals2.map(d => cam2.collection('deals').add({ ...d, createdAt: ts })));
 
-    toast('Demo data added!', 'success');
-    loadDashboard();
+    enterDemoMode();
   }
 
   function exportCSV() {

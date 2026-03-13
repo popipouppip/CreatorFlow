@@ -209,7 +209,7 @@
   });
 
   async function loadInfluencers() {
-    const snap = await db.collection('users').doc(currentUser.uid).collection('influencers').orderBy('createdAt','desc').get();
+    const snap = await db.collection('users').doc(currentUser.uid).collection(demoCol('influencers')).orderBy('createdAt','desc').get();
     allInfluencers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderTable();
   }
@@ -288,7 +288,7 @@
     if (!data.name) return toast(t('toast_enter_name_inf'), 'error');
     if (!data.handle) return toast(t('toast_enter_handle'), 'error');
 
-    const col = db.collection('users').doc(currentUser.uid).collection('influencers');
+    const col = db.collection('users').doc(currentUser.uid).collection(demoCol('influencers'));
 
     if (!editingId) {
       const limit = LIMITS[userPlan];
@@ -306,7 +306,7 @@
 
   async function deleteInfluencer(id) {
     if (!confirm(t('confirm_delete_inf'))) return;
-    await db.collection('users').doc(currentUser.uid).collection('influencers').doc(id).delete();
+    await db.collection('users').doc(currentUser.uid).collection(demoCol('influencers')).doc(id).delete();
     toast(t('toast_removed'), 'success');
     loadInfluencers();
   }

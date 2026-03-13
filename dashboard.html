@@ -38,6 +38,7 @@
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="seedDemo()" style="color:var(--muted)">🧪 Demo Data</button>
       <button class="btn btn-primary" data-i18n="dash_new_campaign" onclick="openNewCampaign()">+ New Campaign</button>
     </div>
 
@@ -247,6 +248,40 @@
 
   document.addEventListener('langchange', () => { if (cachedCampaigns.length) renderCampaigns(cachedCampaigns); });
   document.getElementById('modal-campaign').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-campaign'); });
+
+  async function seedDemo() {
+    if (!confirm('Add demo data? This will add sample campaigns, influencers and deals.')) return;
+    const uid = currentUser.uid;
+    const ts  = firebase.firestore.FieldValue.serverTimestamp();
+    const infCol = db.collection('users').doc(uid).collection('influencers');
+    const camCol = db.collection('users').doc(uid).collection('campaigns');
+
+    const infs = [
+      { name:'Emma Collins', platform:'instagram', handle:'@emmacollins', niche:'fashion', followers:128000, contact:'emma@gmail.com', url:'https://instagram.com/emmacollins', notes:'Great engagement', createdAt: ts },
+      { name:'Jake Morales',  platform:'youtube',   handle:'@jakemorales',  niche:'tech',    followers:340000, contact:'jake@agency.io',  url:'https://youtube.com/jakemorales',  notes:'Tech reviews niche', createdAt: ts },
+      { name:'Sofia Reyes',  platform:'tiktok',    handle:'@sofiareyes',   niche:'beauty',  followers:210000, contact:'sofia@gmail.com', url:'https://tiktok.com/@sofiareyes',   notes:'Very responsive', createdAt: ts },
+      { name:'Carlos Vega',  platform:'instagram', handle:'@carlosvega',   niche:'fitness', followers:95000,  contact:'carlos@mail.com', url:'https://instagram.com/carlosvega', notes:'', createdAt: ts },
+    ];
+    const infRefs = await Promise.all(infs.map(i => infCol.add(i)));
+
+    const cam1 = await camCol.add({ name:'Summer Launch 2025', description:'Product launch for summer collection', budget:5000, status:'active', createdAt: ts });
+    const cam2 = await camCol.add({ name:'Tech Review Campaign', description:'New gadget reviews with YouTubers', budget:8000, status:'active', createdAt: ts });
+
+    const deals1 = [
+      { influencerName:'Emma Collins', platform:'instagram', stage:'paid',        amount:1200, reach:85000,  deadline:'2025-07-10', postUrl:'https://instagram.com/p/abc1', notes:'Story + feed post' },
+      { influencerName:'Sofia Reyes',  platform:'tiktok',    stage:'posted',      amount:900,  reach:120000, deadline:'2025-07-15', postUrl:'https://tiktok.com/v/xyz2',     notes:'30s video' },
+      { influencerName:'Carlos Vega',  platform:'instagram', stage:'agreed',      amount:600,  reach:60000,  deadline:'2025-07-20', postUrl:'', notes:'' },
+    ];
+    const deals2 = [
+      { influencerName:'Jake Morales',  platform:'youtube',   stage:'paid',        amount:3500, reach:280000, deadline:'2025-06-30', postUrl:'https://youtube.com/watch?v=abc', notes:'10-min dedicated review' },
+      { influencerName:'Emma Collins',  platform:'instagram', stage:'negotiating', amount:800,  reach:0,      deadline:'2025-08-01', postUrl:'', notes:'Price TBD' },
+    ];
+    await Promise.all(deals1.map(d => cam1.collection('deals').add({ ...d, createdAt: ts })));
+    await Promise.all(deals2.map(d => cam2.collection('deals').add({ ...d, createdAt: ts })));
+
+    toast('Demo data added!', 'success');
+    loadDashboard();
+  }
 
   function exportCSV() {
     if (!cachedCampaigns.length) return toast('No campaigns to export', 'error');

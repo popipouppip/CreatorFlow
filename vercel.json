@@ -1,7 +1,4 @@
 {
   "outputDirectory": ".",
-  "installCommand": "npm install",
-  "functions": {
-    "api/webhook.js": { "bodyParser": false }
-  }
+  "installCommand": "npm install"
 }

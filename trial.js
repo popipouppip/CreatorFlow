@@ -36,74 +36,78 @@ function applyTrialUI(status) {
       <div class="trial-gate">
         <div class="trial-gate-box">
           <div style="font-size:40px;margin-bottom:16px">⏰</div>
-          <h2 style="margin-bottom:8px">Your 14-day trial has ended</h2>
-          <p style="color:var(--muted);margin-bottom:24px">Upgrade to continue using CreatorFlow and keep all your data.</p>
+          <h2 style="margin-bottom:8px">${t('trial_ended_title')}</h2>
+          <p style="color:var(--muted);margin-bottom:24px">${t('trial_ended_sub')}</p>
           <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn-primary" onclick="upgradePlan('pro')">Pro — $19/mo</button>
             <button class="btn btn-ghost" onclick="upgradePlan('agency')">Agency — $34.99/mo</button>
           </div>
           <p style="font-size:12px;color:var(--faint);margin-top:20px">
-            <a href="index.html" onclick="auth.signOut()" style="color:var(--accent)">Sign out</a>
+            <a href="index.html" onclick="auth.signOut()" style="color:var(--accent)">${t('nav_signout')}</a>
           </p>
         </div>
       </div>`;
   }
 }
 
+function buildUpgradeModal() {
+  const el = document.createElement('div');
+  el.id = 'modal-upgrade';
+  el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="upgrade-modal-inner" onclick="event.stopPropagation()">
+      <button class="upgrade-modal-close" onclick="closeUpgradeModal()">×</button>
+      <div class="upgrade-modal-header">
+        <h2>${t('upgrade_modal_title')}</h2>
+        <p>${t('upgrade_modal_sub')}</p>
+      </div>
+      <div class="upgrade-features-grid">
+        <div class="upgrade-feature-item"><span class="uf-icon">📋</span><div><strong>${t('uf_pipeline')}</strong><p>${t('uf_pipeline_desc')}</p></div></div>
+        <div class="upgrade-feature-item"><span class="uf-icon">👥</span><div><strong>${t('uf_database')}</strong><p>${t('uf_database_desc')}</p></div></div>
+        <div class="upgrade-feature-item"><span class="uf-icon">📊</span><div><strong>${t('uf_analytics')}</strong><p>${t('uf_analytics_desc')}</p></div></div>
+        <div class="upgrade-feature-item"><span class="uf-icon">✉️</span><div><strong>${t('uf_templates')}</strong><p>${t('uf_templates_desc')}</p></div></div>
+        <div class="upgrade-feature-item"><span class="uf-icon">📥</span><div><strong>${t('uf_csv')}</strong><p>${t('uf_csv_desc')}</p></div></div>
+        <div class="upgrade-feature-item"><span class="uf-icon">⚡</span><div><strong>${t('uf_drag')}</strong><p>${t('uf_drag_desc')}</p></div></div>
+      </div>
+      <div class="upgrade-plans-row">
+        <div class="upgrade-plan-card highlighted">
+          <div class="up-badge">${t('up_most_popular')}</div>
+          <div class="up-name">Pro</div>
+          <div class="up-price">$19<span>/mo</span></div>
+          <div class="up-desc">${t('up_pro_desc')}</div>
+          <ul class="up-features">
+            <li>✓ ${t('up_pro_f1')}</li>
+            <li>✓ ${t('up_pro_f2')}</li>
+            <li>✓ ${t('up_pro_f3')}</li>
+            <li>✓ ${t('up_pro_f4')}</li>
+            <li>✓ ${t('up_pro_f5')}</li>
+          </ul>
+          <button class="btn btn-primary" style="width:100%" onclick="upgradePlan('pro')">${t('btn_get_pro')}</button>
+        </div>
+        <div class="upgrade-plan-card">
+          <div class="up-name">Agency</div>
+          <div class="up-price">$34.99<span>/mo</span></div>
+          <div class="up-desc">${t('up_agency_desc')}</div>
+          <ul class="up-features">
+            <li>✓ ${t('up_agency_f1')}</li>
+            <li>✓ ${t('up_agency_f2')}</li>
+            <li>✓ ${t('up_agency_f3')}</li>
+            <li>✓ ${t('up_agency_f4')}</li>
+            <li>✓ ${t('up_agency_f5')}</li>
+          </ul>
+          <button class="btn btn-ghost" style="width:100%" onclick="upgradePlan('agency')">${t('btn_get_agency')}</button>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--faint);margin-top:16px">${t('upgrade_footer')}</p>
+    </div>`;
+  el.addEventListener('click', e => { if (e.target === el) closeUpgradeModal(); });
+  document.body.appendChild(el);
+}
+
 function openUpgradeModal() {
-  if (!document.getElementById('modal-upgrade')) {
-    const el = document.createElement('div');
-    el.id = 'modal-upgrade';
-    el.className = 'modal-overlay';
-    el.innerHTML = `
-      <div class="upgrade-modal-inner" onclick="event.stopPropagation()">
-        <button class="upgrade-modal-close" onclick="closeUpgradeModal()">×</button>
-        <div class="upgrade-modal-header">
-          <h2>Unlock the full power of CreatorFlow</h2>
-          <p>Everything you need to run influencer campaigns like a pro</p>
-        </div>
-        <div class="upgrade-features-grid">
-          <div class="upgrade-feature-item"><span class="uf-icon">📋</span><div><strong>Deal Pipeline</strong><p>Track every deal from Found to Paid across unlimited campaigns</p></div></div>
-          <div class="upgrade-feature-item"><span class="uf-icon">👥</span><div><strong>Influencer Database</strong><p>Build a searchable database of 100+ creators with all their data</p></div></div>
-          <div class="upgrade-feature-item"><span class="uf-icon">📊</span><div><strong>Campaign Analytics</strong><p>CPM, ROI, reach — see which influencers actually perform</p></div></div>
-          <div class="upgrade-feature-item"><span class="uf-icon">✉️</span><div><strong>Outreach Templates</strong><p>Send first contact & follow-ups in seconds with ready templates</p></div></div>
-          <div class="upgrade-feature-item"><span class="uf-icon">📥</span><div><strong>CSV Export</strong><p>Export all your campaign data to Excel or Google Sheets</p></div></div>
-          <div class="upgrade-feature-item"><span class="uf-icon">⚡</span><div><strong>Drag & Drop Deals</strong><p>Move deals between stages with a simple drag — instant sync</p></div></div>
-        </div>
-        <div class="upgrade-plans-row">
-          <div class="upgrade-plan-card highlighted">
-            <div class="up-badge">Most popular</div>
-            <div class="up-name">Pro</div>
-            <div class="up-price">$19<span>/mo</span></div>
-            <div class="up-desc">For growing brands</div>
-            <ul class="up-features">
-              <li>✓ Up to 100 influencers</li>
-              <li>✓ 10 active campaigns</li>
-              <li>✓ Full analytics + CSV export</li>
-              <li>✓ Unlimited outreach templates</li>
-              <li>✓ Priority support</li>
-            </ul>
-            <button class="btn btn-primary" style="width:100%" onclick="upgradePlan('pro')">Get Pro →</button>
-          </div>
-          <div class="upgrade-plan-card">
-            <div class="up-name">Agency</div>
-            <div class="up-price">$34.99<span>/mo</span></div>
-            <div class="up-desc">For agencies & power users</div>
-            <ul class="up-features">
-              <li>✓ Unlimited influencers</li>
-              <li>✓ Unlimited campaigns</li>
-              <li>✓ Up to 5 team members</li>
-              <li>✓ Everything in Pro</li>
-              <li>✓ White-label reports</li>
-            </ul>
-            <button class="btn btn-ghost" style="width:100%" onclick="upgradePlan('agency')">Get Agency →</button>
-          </div>
-        </div>
-        <p style="text-align:center;font-size:12px;color:var(--faint);margin-top:16px">Cancel anytime · No hidden fees · Your data stays safe</p>
-      </div>`;
-    el.addEventListener('click', e => { if (e.target === el) closeUpgradeModal(); });
-    document.body.appendChild(el);
-  }
+  const existing = document.getElementById('modal-upgrade');
+  if (existing) existing.remove();
+  buildUpgradeModal();
   document.getElementById('modal-upgrade').classList.add('open');
 }
 

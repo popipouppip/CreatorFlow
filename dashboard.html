@@ -138,7 +138,7 @@
       const newPlan = userData.plan || 'free';
       const planChanged = newPlan !== userPlan && newPlan !== 'free';
       userPlan = newPlan;
-      document.getElementById('plan-label').textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
+      const planLabel = document.getElementById('plan-label'); if (planLabel) planLabel.textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
       const trial = getTrialStatus(userData);
       applyTrialUI(trial);
       if (!trial.access) return;

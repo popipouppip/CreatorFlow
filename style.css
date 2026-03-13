@@ -123,25 +123,22 @@ select option { background: var(--surface); }
   padding: 12px;
   border-top: 1px solid var(--border);
 }
-.plan-badge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+.sidebar-upgrade-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
   border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
   margin-bottom: 8px;
+  transition: opacity 0.15s;
 }
-.plan-name {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--accent);
-}
-.plan-upgrade { font-size: 11px; color: var(--muted); }
-.plan-upgrade:hover { color: var(--accent); }
+.sidebar-upgrade-btn:hover { opacity: 0.85; }
 .user-info {
   display: flex;
   align-items: center;

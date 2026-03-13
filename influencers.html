@@ -18,10 +18,7 @@
       <a href="account.html"     class="nav-link"><span class="nav-icon">👤</span> <span data-i18n="nav_account">Account</span></a>
     </nav>
     <div class="sidebar-bottom">
-      <div class="plan-badge">
-        <span class="plan-name" id="plan-label">Free</span>
-        <a href="#" class="plan-upgrade" id="upgrade-link" data-i18n="upgrade">Upgrade →</a>
-      </div>
+      <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()">Улучшить</button>
       <div class="user-info">
         <span class="user-email" id="user-email">—</span>
         <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>

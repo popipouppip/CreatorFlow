@@ -20,9 +20,8 @@ async function ensureTrialStarted(uid, userData) {
 }
 
 function applyTrialUI(status) {
-  // Update plan label
-  const label = document.getElementById('plan-label');
-  if (label && status.trial) label.textContent = t('trial_label', { days: status.daysLeft });
+  const btn = document.getElementById('upgrade-btn');
+  if (btn) btn.style.display = status.access && !status.trial ? 'none' : '';
 
   if (status.access && status.trial) {
     const el = document.getElementById('trial-banner');

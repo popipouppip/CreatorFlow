@@ -18,10 +18,7 @@
       <a href="account.html"     class="nav-link active"><span class="nav-icon">👤</span> <span data-i18n="nav_account">Account</span></a>
     </nav>
     <div class="sidebar-bottom">
-      <div class="plan-badge">
-        <span class="plan-name" id="plan-label">—</span>
-        <a href="#" class="plan-upgrade" id="upgrade-link" onclick="event.preventDefault();openUpgradeModal()">Upgrade →</a>
-      </div>
+      <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()">Улучшить</button>
       <div class="user-info">
         <span class="user-email" id="user-email">—</span>
         <button class="logout-btn" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
@@ -172,8 +169,8 @@ auth.onAuthStateChanged(user => {
       document.getElementById('profile-since').textContent = 'Member since ' + d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
 
-    // Show upgrade link only if free
-    document.getElementById('upgrade-link').style.display = plan === 'free' ? '' : 'none';
+    const upgradeBtn = document.getElementById('upgrade-btn');
+    if (upgradeBtn) upgradeBtn.style.display = plan === 'free' ? '' : 'none';
   });
 });
 </script>

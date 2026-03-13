@@ -6,6 +6,7 @@ const LANGS = {
     nav_analytics:   'Analytics',
     nav_account:     'Account',
     upgrade:         'Upgrade →',
+    btn_upgrade:     'Upgrade',
     logout:          'Out',
 
     // dashboard
@@ -274,6 +275,7 @@ const LANGS = {
     nav_analytics:   'Аналитика',
     nav_account:     'Аккаунт',
     upgrade:         'Улучшить →',
+    btn_upgrade:     'Улучшить',
     logout:          'Выйти',
 
     dash_title:        'Дашборд',

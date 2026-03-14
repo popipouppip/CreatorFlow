@@ -257,6 +257,8 @@ const LANGS = {
     auth_creating:      'Creating account…',
     auth_logging:       'Logging in…',
     auth_terms:         'By signing up you agree to our Terms of Service',
+    auth_or:            'or',
+    auth_google:        'Continue with Google',
     auth_forgot:        'Forgot password?',
     auth_enter_email:   'Enter your email first.',
     auth_reset_sent:    'Reset link sent! Check your email.',
@@ -519,6 +521,8 @@ const LANGS = {
     auth_creating:      'Создаём аккаунт…',
     auth_logging:       'Входим…',
     auth_terms:         'Регистрируясь, вы соглашаетесь с Условиями использования',
+    auth_or:            'или',
+    auth_google:        'Войти через Google',
     auth_forgot:        'Забыли пароль?',
     auth_enter_email:   'Сначала введите email.',
     auth_reset_sent:    'Ссылка отправлена! Проверьте почту.',
@@ -543,7 +547,14 @@ function t(key, vars) {
 function applyLang() {
   document.documentElement.lang = currentLang;
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.textContent = t(el.dataset.i18n);
+    const icon = el.querySelector('[data-lucide], svg');
+    if (icon) {
+      // preserve icon, update only trailing text node
+      Array.from(el.childNodes).forEach(n => { if (n.nodeType === 3) n.remove(); });
+      el.append(document.createTextNode(t(el.dataset.i18n)));
+    } else {
+      el.textContent = t(el.dataset.i18n);
+    }
   });
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     el.placeholder = t(el.dataset.i18nPh);

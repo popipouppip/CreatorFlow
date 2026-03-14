@@ -929,6 +929,16 @@ tbody tr:hover td { background: var(--surface2); }
 .auth-tab.active { background: var(--accent); color: #fff; }
 .auth-form { display: flex; flex-direction: column; gap: 14px; }
 .auth-error { font-size: 13px; color: var(--red); text-align: center; display: none; }
+.auth-divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 10px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 14px; font-weight: 500; font-family: inherit;
+  color: var(--text); cursor: pointer; transition: background 0.15s;
+}
+.btn-google:hover { background: var(--surface2); }
 
 /* ===== UPGRADE BANNER ===== */
 .upgrade-banner {

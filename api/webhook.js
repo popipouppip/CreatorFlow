@@ -23,29 +23,18 @@ module.exports = async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (e) {
-    console.error('Stripe sig error:', e.message, '| rawBody len:', rawBody.length);
-    // Skip verification — at least process the event
-    try { event = JSON.parse(rawBody.toString()); }
-    catch { return res.status(400).send('Bad body'); }
+    return res.status(400).send('Webhook error');
   }
-
-  console.log('Webhook event:', event.type);
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const { userId, plan } = session.metadata || {};
-    console.log('Checkout meta:', { userId, plan, customer: session.customer });
     if (userId && plan) {
-      try {
-        await db.collection('users').doc(userId).set({
-          plan,
-          stripeCustomerId: session.customer,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        console.log('Firestore updated:', userId, '->', plan);
-      } catch (e) {
-        console.error('Firestore error:', e.message);
-      }
+      await db.collection('users').doc(userId).set({
+        plan,
+        stripeCustomerId: session.customer,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
     }
   }
 

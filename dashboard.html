@@ -226,10 +226,11 @@
   }
 
   async function deleteCampaign(id) {
-    if (!confirm(t('confirm_delete_campaign'))) return;
-    await db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).doc(id).delete();
-    toast(t('toast_campaign_deleted'), 'success');
-    loadDashboard();
+    openDemoConfirm(t('confirm_delete_campaign'), '', async () => {
+      await db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).doc(id).delete();
+      toast(t('toast_campaign_deleted'), 'success');
+      loadDashboard();
+    });
   }
 
   function openNewCampaign() { document.getElementById('modal-campaign').classList.add('open'); }

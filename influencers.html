@@ -309,10 +309,11 @@
   }
 
   async function deleteInfluencer(id) {
-    if (!confirm(t('confirm_delete_inf'))) return;
-    await db.collection('users').doc(currentUser.uid).collection(demoCol('influencers')).doc(id).delete();
-    toast(t('toast_removed'), 'success');
-    loadInfluencers();
+    openDemoConfirm(t('confirm_delete_inf'), '', async () => {
+      await db.collection('users').doc(currentUser.uid).collection(demoCol('influencers')).doc(id).delete();
+      toast(t('toast_removed'), 'success');
+      loadInfluencers();
+    });
   }
 
   function closeModal() { document.getElementById('modal-inf').classList.remove('open'); }

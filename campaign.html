@@ -355,12 +355,13 @@
   }
 
   async function deleteDeal() {
-    if (!confirm(t('confirm_delete_deal'))) return;
-    await db.collection('users').doc(currentUser.uid)
-      .collection(demoCol('campaigns')).doc(campaignId).collection('deals').doc(editingDealId).delete();
-    closeModal('modal-deal');
-    toast(t('toast_deal_deleted'), 'success');
-    loadDeals();
+    openDemoConfirm(t('confirm_delete_deal'), '', async () => {
+      await db.collection('users').doc(currentUser.uid)
+        .collection(demoCol('campaigns')).doc(campaignId).collection('deals').doc(editingDealId).delete();
+      closeModal('modal-deal');
+      toast(t('toast_deal_deleted'), 'success');
+      loadDeals();
+    });
   }
 
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }

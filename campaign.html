@@ -92,6 +92,10 @@
           <option value="paid"        data-i18n="stage_paid">Paid</option>
         </select>
       </div>
+      <div class="form-group" id="paiddate-group" style="display:none">
+        <label class="form-label" data-i18n="label_paid_date">Payment Date</label>
+        <input type="date" id="d-paiddate">
+      </div>
       <div class="form-group" id="posturl-group" style="display:none">
         <label class="form-label" data-i18n="label_post_url">Post URL</label>
         <input type="text" id="d-posturl" data-i18n-ph="ph_post_url" placeholder="https://instagram.com/p/…">
@@ -214,14 +218,28 @@
   function dealCard(d) {
     const today = new Date().toISOString().slice(0,10);
     const overdue = d.deadline && d.deadline < today && d.stage !== 'paid';
+    const isPaid = d.stage === 'paid';
     return '<div class="deal-card stage-' + d.stage + '" data-id="' + d.id + '" onclick="openEditDeal(\'' + d.id + '\')">' +
-      '<div class="deal-influencer">' + esc(d.influencerName) + '</div>' +
+      '<div class="deal-influencer">' + esc(d.influencerName) +
+        (isPaid ? '<span class="deal-paid-badge">✓ Paid</span>' : '') +
+      '</div>' +
       '<div class="deal-handle">' + esc(d.influencerHandle || '') + '</div>' +
       '<div class="deal-footer">' +
         '<span class="deal-amount">$' + Number(d.amount||0).toLocaleString() + '</span>' +
-        (d.deadline ? '<span class="deal-deadline ' + (overdue ? 'deal-overdue' : '') + '">' + (overdue ? '⚠ ' : '') + d.deadline + '</span>' : '') +
+        (isPaid && d.paidDate ? '<span class="deal-paiddate">' + d.paidDate + '</span>' :
+          d.deadline ? '<span class="deal-deadline ' + (overdue ? 'deal-overdue' : '') + '">' + (overdue ? '⚠ ' : '') + d.deadline + '</span>' : '') +
+        (!isPaid ? '<button class="deal-mark-paid" onclick="event.stopPropagation();markPaid(\'' + d.id + '\')" title="Mark as paid">✓</button>' : '') +
       '</div>' +
     '</div>';
+  }
+
+  async function markPaid(id) {
+    const today = new Date().toISOString().slice(0,10);
+    await db.collection('users').doc(currentUser.uid)
+      .collection(demoCol('campaigns')).doc(campaignId)
+      .collection('deals').doc(id).update({ stage: 'paid', paidDate: today });
+    toast(t('toast_marked_paid'), 'success');
+    await loadDeals();
   }
 
   async function updateDealStage(dealId, newStage) {
@@ -259,10 +277,11 @@
     document.getElementById('d-influencer').value = '';
     document.getElementById('d-amount').value = '';
     document.getElementById('d-deadline').value = '';
-    document.getElementById('d-stage').value = 'found';
-    document.getElementById('d-notes').value = '';
-    document.getElementById('d-posturl').value = '';
-    document.getElementById('d-reach').value = '';
+    document.getElementById('d-stage').value    = 'found';
+    document.getElementById('d-notes').value    = '';
+    document.getElementById('d-posturl').value  = '';
+    document.getElementById('d-reach').value    = '';
+    document.getElementById('d-paiddate').value = '';
     togglePostFields('found');
     document.getElementById('modal-deal').classList.add('open');
   }
@@ -280,6 +299,7 @@
     document.getElementById('d-notes').value    = deal.notes || '';
     document.getElementById('d-posturl').value  = deal.postUrl || '';
     document.getElementById('d-reach').value    = deal.reach || '';
+    document.getElementById('d-paiddate').value = deal.paidDate || '';
     togglePostFields(deal.stage);
     document.getElementById('modal-deal').classList.add('open');
   }
@@ -288,8 +308,11 @@
 
   function togglePostFields(stage) {
     const show = stage === 'posted' || stage === 'paid';
-    document.getElementById('posturl-group').style.display = show ? '' : 'none';
-    document.getElementById('reach-group').style.display   = show ? '' : 'none';
+    document.getElementById('posturl-group').style.display  = show ? '' : 'none';
+    document.getElementById('reach-group').style.display    = show ? '' : 'none';
+    document.getElementById('paiddate-group').style.display = stage === 'paid' ? '' : 'none';
+    if (stage === 'paid' && !document.getElementById('d-paiddate').value)
+      document.getElementById('d-paiddate').value = new Date().toISOString().slice(0,10);
   }
 
   async function saveDeal() {
@@ -310,16 +333,19 @@
         postUrl:  document.getElementById('d-posturl').value.trim(),
         reach:    Number(document.getElementById('d-reach').value) || 0,
         notes:    document.getElementById('d-notes').value.trim(),
+        paidDate: document.getElementById('d-paiddate').value || '',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     } else {
+      const stage = document.getElementById('d-stage').value;
       await col.doc(editingDealId).update({
-        stage:    document.getElementById('d-stage').value,
+        stage,
         amount:   Number(document.getElementById('d-amount').value) || 0,
         deadline: document.getElementById('d-deadline').value,
         postUrl:  document.getElementById('d-posturl').value.trim(),
         reach:    Number(document.getElementById('d-reach').value) || 0,
         notes:    document.getElementById('d-notes').value.trim(),
+        paidDate: document.getElementById('d-paiddate').value || '',
       });
     }
 

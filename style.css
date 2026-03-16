@@ -358,6 +358,14 @@ tbody tr:hover td { background: var(--surface2); }
 .deal-amount { font-size: 12px; font-weight: 700; color: var(--green); }
 .deal-deadline { font-size: 11px; color: var(--faint); }
 .deal-overdue { color: var(--red) !important; }
+.deal-paid-badge { font-size: 10px; font-weight: 700; color: var(--green); margin-left: 6px; letter-spacing: 0.3px; }
+.deal-paiddate { font-size: 11px; color: var(--green); }
+.deal-mark-paid {
+  background: none; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--muted); font-size: 11px; padding: 1px 6px; cursor: pointer;
+  transition: all 0.15s; line-height: 1.4;
+}
+.deal-mark-paid:hover { background: var(--green); color: #fff; border-color: var(--green); }
 
 /* Stage colors (left border) */
 .stage-found       { border-left: 3px solid var(--faint); }

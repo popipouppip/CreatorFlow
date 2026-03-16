@@ -8,6 +8,26 @@ function demoCol(name) { return isDemoMode() ? 'demo_' + name : name; }
 function enterDemoMode() { localStorage.setItem('cfDemo', '1'); location.reload(); }
 function exitDemoMode()  { localStorage.setItem('cfDemo', '0'); location.reload(); }
 
+async function cleanAndExitDemo() {
+  const uid = auth.currentUser?.uid;
+  if (!uid) { exitDemoMode(); return; }
+  try {
+    const batch = db.batch();
+    const [cams, infs] = await Promise.all([
+      db.collection('users').doc(uid).collection('demo_campaigns').get(),
+      db.collection('users').doc(uid).collection('demo_influencers').get()
+    ]);
+    for (const cam of cams.docs) {
+      const deals = await cam.ref.collection('deals').get();
+      deals.forEach(d => batch.delete(d.ref));
+      batch.delete(cam.ref);
+    }
+    infs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  } catch(e) { console.error('Demo cleanup error', e); }
+  exitDemoMode();
+}
+
 let _demoConfirmCb = null;
 function openDemoConfirm(title, message, onConfirm) {
   _demoConfirmCb = onConfirm;
@@ -67,7 +87,7 @@ function applyTrialUI(status) {
     document.querySelector('.sidebar-bottom')?.prepend(demoBar);
   }
   if (isDemoMode()) {
-    demoBar.innerHTML = '<div class="demo-bar"><i data-lucide="flask-conical" style="width:14px;height:14px;margin-right:6px"></i>Demo Mode <button class="btn btn-ghost btn-sm" onclick="exitDemoMode()" style="margin-left:8px;font-size:11px;padding:2px 8px">Exit</button></div>';
+    demoBar.innerHTML = '<div class="demo-bar"><i data-lucide="flask-conical" style="width:14px;height:14px;margin-right:6px"></i>Demo Mode <button class="btn btn-ghost btn-sm" onclick="cleanAndExitDemo()" style="margin-left:8px;font-size:11px;padding:2px 8px">Exit</button></div>';
     if (window.lucide) lucide.createIcons({ nodes: [demoBar] });
   } else {
     demoBar.innerHTML = '';

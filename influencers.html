@@ -56,6 +56,9 @@
           <option value="youtube">YouTube</option>
           <option value="twitter">Twitter/X</option>
         </select>
+        <select class="filter-select" id="filter-tag" onchange="renderTable()">
+          <option value="" data-i18n="all_tags">All tags</option>
+        </select>
         <select class="filter-select" id="filter-niche" onchange="renderTable()">
           <option value="" data-i18n="all_niches">All niches</option>
           <option value="fashion">Fashion</option>
@@ -81,11 +84,12 @@
                 <th data-i18n="th_niche">Niche</th>
                 <th data-i18n="th_followers">Followers</th>
                 <th data-i18n="th_contact">Contact</th>
+                <th data-i18n="th_tags">Tags</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="influencers-tbody">
-              <tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><h3 data-i18n="no_influencers">No influencers yet</h3><p data-i18n="no_influencers_sub">Add your first influencer to build your database</p></div></td></tr>
+              <tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><h3 data-i18n="no_influencers">No influencers yet</h3><p data-i18n="no_influencers_sub">Add your first influencer to build your database</p></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -170,6 +174,11 @@
       <div class="form-group">
         <label class="form-label" data-i18n="label_profile_url">Profile URL</label>
         <input type="text" id="f-url" data-i18n-ph="ph_profile_url" placeholder="https://instagram.com/janedoe">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label_tags">Tags</label>
+        <input type="text" id="f-tags" data-i18n-ph="ph_tags" placeholder="vip, responsive, fashion…">
+        <div class="form-hint" data-i18n="hint_tags">Comma-separated labels</div>
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="label_notes">Notes</label>
@@ -295,21 +304,33 @@
 
   function closeOutreach() { document.getElementById('modal-outreach').classList.remove('open'); }
 
+  function buildTagFilter() {
+    const all = new Set();
+    allInfluencers.forEach(i => (i.tags||[]).forEach(tag => all.add(tag)));
+    const sel = document.getElementById('filter-tag');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">' + t('all_tags') + '</option>' +
+      [...all].sort().map(tag => '<option value="' + esc(tag) + '"' + (tag===cur?' selected':'') + '>' + esc(tag) + '</option>').join('');
+  }
+
   function renderTable() {
+    buildTagFilter();
     const q        = document.getElementById('search').value.toLowerCase();
     const platform = document.getElementById('filter-platform').value;
     const niche    = document.getElementById('filter-niche').value;
+    const tag      = document.getElementById('filter-tag').value;
 
     const filtered = allInfluencers.filter(i => {
       const matchQ = !q || i.name?.toLowerCase().includes(q) || i.handle?.toLowerCase().includes(q);
       const matchP = !platform || i.platform === platform;
       const matchN = !niche    || i.niche === niche;
-      return matchQ && matchP && matchN;
+      const matchT = !tag      || (i.tags||[]).includes(tag);
+      return matchQ && matchP && matchN && matchT;
     });
 
     const tbody = document.getElementById('influencers-tbody');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><h3>' + t('no_inf_found') + '</h3><p>' + t('no_inf_found_sub') + '</p></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><h3>' + t('no_inf_found') + '</h3><p>' + t('no_inf_found_sub') + '</p></div></td></tr>';
       return;
     }
 
@@ -321,6 +342,7 @@
         '<td>' + esc(i.niche) + '</td>' +
         '<td class="td-num">' + fmtNum(i.followers) + '</td>' +
         '<td style="font-size:12px;color:var(--muted)">' + esc(i.contact||'—') + '</td>' +
+        '<td>' + (i.tags||[]).map(tag => '<span class="inf-tag">' + esc(tag) + '</span>').join('') + '</td>' +
         '<td><div class="td-actions">' +
           '<button class="btn-icon" title="' + t('btn_outreach') + '" onclick="openOutreach(\'' + i.id + '\')">✉</button>' +
           '<button class="btn-icon" title="Edit" onclick="openEdit(\'' + i.id + '\')"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>' +
@@ -334,7 +356,7 @@
   function openAdd() {
     editingId = null;
     document.getElementById('modal-title').textContent = t('modal_add_inf');
-    ['f-name','f-handle','f-contact','f-url','f-notes'].forEach(id => document.getElementById(id).value = '');
+    ['f-name','f-handle','f-contact','f-url','f-notes','f-tags'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-followers').value = '';
     document.getElementById('f-platform').value = 'instagram';
     document.getElementById('f-niche').value = 'fashion';
@@ -354,6 +376,7 @@
     document.getElementById('f-contact').value  = inf.contact || '';
     document.getElementById('f-url').value      = inf.url || '';
     document.getElementById('f-notes').value    = inf.notes || '';
+    document.getElementById('f-tags').value     = (inf.tags||[]).join(', ');
     document.getElementById('modal-inf').classList.add('open');
   }
 
@@ -367,6 +390,7 @@
       contact:   document.getElementById('f-contact').value.trim(),
       url:       document.getElementById('f-url').value.trim(),
       notes:     document.getElementById('f-notes').value.trim(),
+      tags:      document.getElementById('f-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
     };
     if (!data.name) return toast(t('toast_enter_name_inf'), 'error');
     if (!data.handle) return toast(t('toast_enter_handle'), 'error');

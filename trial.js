@@ -26,8 +26,8 @@ function openDemoConfirm(title, message, onConfirm) {
         <p style="color:var(--muted);margin:0">${message}</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="document.getElementById('modal-demo-confirm').remove()">Cancel</button>
-        <button class="btn btn-primary" onclick="document.getElementById('modal-demo-confirm').remove();_demoConfirmCb&&_demoConfirmCb()">Confirm</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-demo-confirm').remove()">${t('cancel')}</button>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-demo-confirm').remove();_demoConfirmCb&&_demoConfirmCb()">${t('confirm')}</button>
       </div>
     </div>`;
   el.addEventListener('click', e => { if (e.target === el) el.remove(); });

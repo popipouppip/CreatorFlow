@@ -255,9 +255,9 @@
 
   function handleDemoBtn() {
     if (isDemoMode()) {
-      openDemoConfirm('Exit Demo Mode', 'Switch back to your real data?', exitDemoMode);
+      openDemoConfirm(t('demo_exit_title'), t('demo_exit_msg'), exitDemoMode);
     } else {
-      openDemoConfirm('Enter Demo Mode', 'This will load sample data so you can explore the app. Your real data stays safe.', seedDemo);
+      openDemoConfirm(t('demo_enter_title'), t('demo_enter_msg'), seedDemo);
     }
   }
 

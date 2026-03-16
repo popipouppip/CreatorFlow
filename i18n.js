@@ -33,6 +33,12 @@ const LANGS = {
     ph_description:            "What's this campaign about?",
     label_budget:              'Total Budget ($)',
     btn_cancel:                'Cancel',
+    cancel:                    'Cancel',
+    confirm:                   'Confirm',
+    demo_enter_title:          'Enter Demo Mode',
+    demo_enter_msg:            'This will load sample data so you can explore the app. Your real data stays safe.',
+    demo_exit_title:           'Exit Demo Mode',
+    demo_exit_msg:             'Switch back to your real data?',
     btn_create_campaign:       'Create Campaign',
 
     // influencers page
@@ -302,6 +308,12 @@ const LANGS = {
     ph_description:      'О чём эта кампания?',
     label_budget:        'Бюджет ($)',
     btn_cancel:          'Отмена',
+    cancel:              'Отмена',
+    confirm:             'Подтвердить',
+    demo_enter_title:    'Демо-режим',
+    demo_enter_msg:      'Загрузятся тестовые данные для знакомства с приложением. Ваши данные останутся нетронутыми.',
+    demo_exit_title:     'Выйти из демо',
+    demo_exit_msg:       'Вернуться к реальным данным?',
     btn_create_campaign: 'Создать кампанию',
 
     inf_title:          'Инфлюенсеры',

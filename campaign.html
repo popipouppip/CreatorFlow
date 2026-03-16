@@ -218,17 +218,20 @@
 
   function dealCard(d) {
     const today = new Date().toISOString().slice(0,10);
-    const overdue = d.deadline && d.deadline < today && d.stage !== 'paid';
-    const isPaid = d.stage === 'paid';
+    const overdue  = d.deadline && d.deadline < today && d.stage !== 'paid';
+    const daysLeft = d.deadline && d.stage !== 'paid' ? Math.ceil((new Date(d.deadline) - new Date(today)) / 86400000) : null;
+    const dueSoon  = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3;
+    const isPaid   = d.stage === 'paid';
     return '<div class="deal-card stage-' + d.stage + '" data-id="' + d.id + '" onclick="openEditDeal(\'' + d.id + '\')">' +
       '<div class="deal-influencer">' + esc(d.influencerName) +
         (isPaid ? '<span class="deal-paid-badge">✓ Paid</span>' : '') +
+        (dueSoon && !overdue ? '<span class="deal-due-soon">⏰</span>' : '') +
       '</div>' +
       '<div class="deal-handle">' + esc(d.influencerHandle || '') + '</div>' +
       '<div class="deal-footer">' +
         '<span class="deal-amount">$' + Number(d.amount||0).toLocaleString() + '</span>' +
         (isPaid && d.paidDate ? '<span class="deal-paiddate">' + d.paidDate + '</span>' :
-          d.deadline ? '<span class="deal-deadline ' + (overdue ? 'deal-overdue' : '') + '">' + (overdue ? '⚠ ' : '') + d.deadline + '</span>' : '') +
+          d.deadline ? '<span class="deal-deadline ' + (overdue ? 'deal-overdue' : dueSoon ? 'deal-due-soon-text' : '') + '">' + (overdue ? '⚠ ' : '') + d.deadline + '</span>' : '') +
         (!isPaid ? '<button class="deal-mark-paid" onclick="event.stopPropagation();markPaid(\'' + d.id + '\')" title="Mark as paid">✓</button>' : '') +
       '</div>' +
     '</div>';

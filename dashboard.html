@@ -67,6 +67,14 @@
         </div>
       </div>
 
+      <div class="card" id="deadlines-card" style="display:none">
+        <div class="card-header">
+          <span class="card-title" data-i18n="deadlines_title">Upcoming Deadlines</span>
+          <span class="card-subtitle" data-i18n="deadlines_sub">Next 7 days</span>
+        </div>
+        <div id="deadlines-list"></div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <span class="card-title" data-i18n="campaigns_title">Campaigns</span>
@@ -169,17 +177,46 @@
     document.getElementById('stat-influencers').textContent = influencersSnap.size;
 
     let totalSpent = 0, totalReach = 0;
+    const upcomingDeadlines = [];
+    const today = new Date().toISOString().slice(0,10);
+    const in7 = new Date(Date.now() + 7*24*60*60*1000).toISOString().slice(0,10);
     for (const c of cachedCampaigns) {
       const deals = await db.collection('users').doc(uid).collection(demoCol('campaigns')).doc(c.id).collection('deals').get();
       deals.forEach(d => {
         const data = d.data();
         if (data.stage === 'paid' || data.stage === 'posted') totalSpent += Number(data.amount) || 0;
         totalReach += Number(data.reach) || 0;
+        if (data.deadline && data.stage !== 'paid' && data.deadline >= today && data.deadline <= in7)
+          upcomingDeadlines.push({ ...data, campaignName: c.name, campaignId: c.id });
       });
     }
+    upcomingDeadlines.sort((a,b) => a.deadline.localeCompare(b.deadline));
     document.getElementById('stat-spent').textContent = '$' + totalSpent.toLocaleString();
     document.getElementById('stat-reach').textContent = fmtNum(totalReach);
+    renderDeadlines(upcomingDeadlines);
     renderCampaigns(cachedCampaigns);
+  }
+
+  function renderDeadlines(items) {
+    const card = document.getElementById('deadlines-card');
+    const list = document.getElementById('deadlines-list');
+    if (!items.length) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    const today = new Date().toISOString().slice(0,10);
+    list.innerHTML = '<div class="deadline-list">' + items.map(d => {
+      const daysLeft = Math.ceil((new Date(d.deadline) - new Date(today)) / 86400000);
+      const urgent = daysLeft <= 2;
+      return '<div class="deadline-item" onclick="location.href=\'campaign.html?id=' + d.campaignId + '\'">' +
+        '<div class="deadline-dot ' + (urgent ? 'urgent' : 'soon') + '"></div>' +
+        '<div class="deadline-info">' +
+          '<div class="deadline-name">' + esc(d.influencerName) + ' <span class="deadline-campaign">· ' + esc(d.campaignName) + '</span></div>' +
+          '<div class="deadline-meta">' + t('stage_' + d.stage) + ' · $' + Number(d.amount||0).toLocaleString() + '</div>' +
+        '</div>' +
+        '<div class="deadline-date ' + (urgent ? 'urgent' : '') + '">' +
+          (daysLeft === 0 ? t('deadline_today') : daysLeft === 1 ? t('deadline_tomorrow') : t('deadline_days', { n: daysLeft })) +
+        '</div>' +
+      '</div>';
+    }).join('') + '</div>';
   }
 
   function renderCampaigns(campaigns) {
@@ -255,7 +292,7 @@
     document.getElementById('success-overlay').classList.remove('open');
   }
 
-  document.addEventListener('langchange', () => { if (cachedCampaigns.length) renderCampaigns(cachedCampaigns); });
+  document.addEventListener('langchange', () => { if (cachedCampaigns.length) { loadDashboard(); } });
   document.getElementById('modal-campaign').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-campaign'); });
 
   function handleDemoBtn() {

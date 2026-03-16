@@ -358,6 +358,8 @@ tbody tr:hover td { background: var(--surface2); }
 .deal-amount { font-size: 12px; font-weight: 700; color: var(--green); }
 .deal-deadline { font-size: 11px; color: var(--faint); }
 .deal-overdue { color: var(--red) !important; }
+.deal-due-soon { font-size: 11px; margin-left: 4px; }
+.deal-due-soon-text { color: var(--yellow) !important; }
 .deal-paid-badge { font-size: 10px; font-weight: 700; color: var(--green); margin-left: 6px; letter-spacing: 0.3px; }
 .deal-paiddate { font-size: 11px; color: var(--green); }
 .deal-mark-paid {
@@ -1111,6 +1113,24 @@ tbody tr:hover td { background: var(--surface2); }
   .demo-section { padding: 32px 20px; }
   .demo-section-inner .btn { margin-left: 0; width: 100%; }
 }
+
+/* deadline widget */
+.card-subtitle { font-size: 12px; color: var(--muted); margin-left: 8px; }
+.deadline-list { display: flex; flex-direction: column; gap: 2px; }
+.deadline-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s;
+}
+.deadline-item:hover { background: var(--surface2); }
+.deadline-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.deadline-dot.urgent { background: var(--red); }
+.deadline-dot.soon   { background: var(--yellow); }
+.deadline-info { flex: 1; min-width: 0; }
+.deadline-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.deadline-campaign { font-weight: 400; color: var(--muted); }
+.deadline-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.deadline-date { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.deadline-date.urgent { color: var(--red); }
 
 /* templates page */
 .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }

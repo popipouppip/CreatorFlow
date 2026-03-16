@@ -262,7 +262,8 @@
   }
 
   async function seedDemo() {
-    const uid = currentUser.uid;
+    const uid = (currentUser || auth.currentUser)?.uid;
+    if (!uid) return;
     const ts  = firebase.firestore.FieldValue.serverTimestamp();
     const infCol = db.collection('users').doc(uid).collection('demo_influencers');
     const camCol = db.collection('users').doc(uid).collection('demo_campaigns');

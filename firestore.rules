@@ -1,32 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users can only read/write their own document
-    match /users/{userId} {
+    match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Campaigns belong to a user
-    match /campaigns/{docId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-
-    // Influencers belong to a user
-    match /influencers/{docId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-
-    // Demo collections — read-only for anyone
-    match /demo_campaigns/{docId} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /demo_influencers/{docId} {
-      allow read: if true;
-      allow write: if false;
     }
   }
 }

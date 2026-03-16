@@ -332,10 +332,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script>
-  // Redirect if already logged in
-  auth.onAuthStateChanged(user => {
-    if (user) window.location.href = 'dashboard.html';
-  });
+  // Fast redirect if already logged in
+  if (localStorage.getItem('cfUid')) {
+    window.location.href = 'dashboard.html';
+  } else {
+    auth.onAuthStateChanged(user => {
+      if (user) { localStorage.setItem('cfUid', user.uid); window.location.href = 'dashboard.html'; }
+    });
+  }
 
   function showDemo(id, btn) {
     document.querySelectorAll('.demo-screen').forEach(s => s.style.display = 'none');
@@ -377,6 +381,7 @@
         trialStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      localStorage.setItem('cfUid', cred.user.uid);
       window.location.href = 'dashboard.html';
     } catch(ex) {
       err.textContent = friendlyError(ex.code);
@@ -396,7 +401,8 @@
     btn.textContent = t('auth_logging');
     btn.disabled = true;
     try {
-      await auth.signInWithEmailAndPassword(email, pass);
+      const cred2 = await auth.signInWithEmailAndPassword(email, pass);
+      localStorage.setItem('cfUid', cred2.user.uid);
       window.location.href = 'dashboard.html';
     } catch(ex) {
       err.textContent = friendlyError(ex.code);

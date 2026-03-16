@@ -21,7 +21,7 @@
       <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()" style="display:none">Улучшить</button>
       <div class="user-info">
         <span class="user-email" id="user-email">—</span>
-        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>{localStorage.removeItem('cfUid');location.href='index.html'})">Out</button>
       </div>
     </div>
   </aside>
@@ -130,8 +130,11 @@
   const LIMITS = { free: { campaigns: 1, influencers: 10 }, pro: { campaigns: 10, influencers: 100 }, agency: { campaigns: Infinity, influencers: Infinity } };
   var currentUser = null, userPlan = 'free', cachedCampaigns = [];
 
+  if (!localStorage.getItem('cfUid')) location.href = 'index.html';
+
   auth.onAuthStateChanged(user => {
-    if (!user) return location.href = 'index.html';
+    if (!user) { localStorage.removeItem('cfUid'); return location.href = 'index.html'; }
+    localStorage.setItem('cfUid', user.uid);
     currentUser = user;
     document.getElementById('user-email').textContent = user.email;
 

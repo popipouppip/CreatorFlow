@@ -21,7 +21,7 @@
       <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()" style="display:none">Улучшить</button>
       <div class="user-info">
         <span class="user-email" id="user-email">—</span>
-        <button class="logout-btn" onclick="auth.signOut().then(()=>location.href='index.html')">Out</button>
+        <button class="logout-btn" onclick="auth.signOut().then(()=>{localStorage.removeItem('cfUid');location.href='index.html'})">Out</button>
       </div>
     </div>
   </aside>
@@ -110,8 +110,10 @@ const PLAN_FEATURES = {
   ],
 };
 
+if (!localStorage.getItem('cfUid')) location.href = 'index.html';
+
 auth.onAuthStateChanged(user => {
-  if (!user) return location.href = 'index.html';
+  if (!user) { localStorage.removeItem('cfUid'); return location.href = 'index.html'; }
   document.getElementById('user-email').textContent = user.email;
   document.getElementById('profile-email').textContent = user.email;
   const initials = user.email.slice(0, 2).toUpperCase();

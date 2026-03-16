@@ -258,10 +258,28 @@
 
   function handleDemoBtn() {
     if (isDemoMode()) {
-      openDemoConfirm(t('demo_exit_title'), t('demo_exit_msg'), exitDemoMode);
+      openDemoConfirm(t('demo_exit_title'), t('demo_exit_msg'), cleanAndExitDemo);
     } else {
       openDemoConfirm(t('demo_enter_title'), t('demo_enter_msg'), seedDemo);
     }
+  }
+
+  async function cleanAndExitDemo() {
+    const uid = (currentUser || auth.currentUser)?.uid;
+    if (!uid) { exitDemoMode(); return; }
+    const batch = db.batch();
+    const [cams, infs] = await Promise.all([
+      db.collection('users').doc(uid).collection('demo_campaigns').get(),
+      db.collection('users').doc(uid).collection('demo_influencers').get()
+    ]);
+    for (const cam of cams.docs) {
+      const deals = await cam.ref.collection('deals').get();
+      deals.forEach(d => batch.delete(d.ref));
+      batch.delete(cam.ref);
+    }
+    infs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    exitDemoMode();
   }
 
   async function seedDemo() {

@@ -15,6 +15,7 @@
       <a href="dashboard.html"   class="nav-link"><i data-lucide="layout-dashboard" class="nav-icon"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
       <a href="influencers.html" class="nav-link active"><i data-lucide="users" class="nav-icon"></i> <span data-i18n="nav_influencers">Influencers</span></a>
       <a href="analytics.html"   class="nav-link"><i data-lucide="bar-chart-2" class="nav-icon"></i> <span data-i18n="nav_analytics">Analytics</span></a>
+      <a href="templates.html"   class="nav-link"><i data-lucide="mail" class="nav-icon"></i> <span data-i18n="nav_templates">Templates</span></a>
       <a href="account.html"     class="nav-link"><i data-lucide="user" class="nav-icon"></i> <span data-i18n="nav_account">Account</span></a>
     </nav>
     <div class="sidebar-bottom">
@@ -182,6 +183,31 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-outreach">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" data-i18n="btn_outreach">Outreach</span>
+      <button class="modal-close" onclick="closeOutreach()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" data-i18n="outreach_pick">Pick Template</label>
+        <select id="outreach-select" onchange="previewOutreach()"></select>
+      </div>
+      <div class="form-group" id="outreach-preview-wrap" style="display:none">
+        <label class="form-label" data-i18n="outreach_preview">Preview</label>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px" id="outreach-subj-preview"></div>
+        <textarea id="outreach-body-preview" rows="7" readonly style="resize:vertical;background:var(--surface2);color:var(--text)"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeOutreach()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" data-i18n="outreach_copy_subj" onclick="copyOutreachSubj()">Copy Subject</button>
+      <button class="btn btn-primary" data-i18n="outreach_copy_body" onclick="copyOutreachBody()">Copy Message</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="i18n.js"></script>
@@ -193,6 +219,7 @@
 <script>
   const LIMITS = { free: 10, pro: 100, agency: Infinity };
   var currentUser = null, userPlan = 'free', allInfluencers = [], editingId = null;
+  var allTemplates = [], outreachInfluencer = null;
 
   if (!localStorage.getItem('cfUid')) location.href = 'index.html';
 
@@ -216,6 +243,57 @@
     allInfluencers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderTable();
   }
+
+  async function loadTemplates() {
+    const snap = await db.collection('users').doc(currentUser.uid).collection('templates').orderBy('createdAt','asc').get();
+    allTemplates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  async function openOutreach(id) {
+    outreachInfluencer = allInfluencers.find(i => i.id === id);
+    if (!outreachInfluencer) return;
+    await loadTemplates();
+    const sel = document.getElementById('outreach-select');
+    sel.innerHTML = '<option value="">' + t('outreach_pick') + '…</option>' +
+      allTemplates.map(tpl => '<option value="' + tpl.id + '">' + esc(tpl.name) + '</option>').join('');
+    document.getElementById('outreach-preview-wrap').style.display = 'none';
+    document.getElementById('modal-outreach').classList.add('open');
+  }
+
+  function fillVars(str, inf) {
+    return str
+      .replace(/\{\{name\}\}/g, inf.name || '')
+      .replace(/\{\{handle\}\}/g, inf.handle || '')
+      .replace(/\{\{platform\}\}/g, inf.platform || '')
+      .replace(/\{\{niche\}\}/g, inf.niche || '');
+  }
+
+  function previewOutreach() {
+    const tplId = document.getElementById('outreach-select').value;
+    const wrap = document.getElementById('outreach-preview-wrap');
+    if (!tplId) { wrap.style.display = 'none'; return; }
+    const tpl = allTemplates.find(t => t.id === tplId);
+    if (!tpl) return;
+    document.getElementById('outreach-subj-preview').textContent = t('tpl_subject') + ': ' + fillVars(tpl.subject || '', outreachInfluencer);
+    document.getElementById('outreach-body-preview').value = fillVars(tpl.body || '', outreachInfluencer);
+    wrap.style.display = '';
+  }
+
+  function copyOutreachBody() {
+    const val = document.getElementById('outreach-body-preview').value;
+    if (!val) return;
+    navigator.clipboard.writeText(val).then(() => toast(t('outreach_copied'), 'success'));
+  }
+
+  function copyOutreachSubj() {
+    const tplId = document.getElementById('outreach-select').value;
+    const tpl = allTemplates.find(t => t.id === tplId);
+    if (!tpl) return;
+    const subj = fillVars(tpl.subject || '', outreachInfluencer);
+    navigator.clipboard.writeText(subj).then(() => toast(t('outreach_copied'), 'success'));
+  }
+
+  function closeOutreach() { document.getElementById('modal-outreach').classList.remove('open'); }
 
   function renderTable() {
     const q        = document.getElementById('search').value.toLowerCase();
@@ -244,6 +322,7 @@
         '<td class="td-num">' + fmtNum(i.followers) + '</td>' +
         '<td style="font-size:12px;color:var(--muted)">' + esc(i.contact||'—') + '</td>' +
         '<td><div class="td-actions">' +
+          '<button class="btn-icon" title="' + t('btn_outreach') + '" onclick="openOutreach(\'' + i.id + '\')">✉</button>' +
           '<button class="btn-icon" title="Edit" onclick="openEdit(\'' + i.id + '\')"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>' +
           '<button class="btn-icon" title="Delete" onclick="deleteInfluencer(\'' + i.id + '\')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>' +
         '</div></td>' +
@@ -333,6 +412,7 @@
 
   document.addEventListener('langchange', () => renderTable());
   document.getElementById('modal-inf').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.getElementById('modal-outreach').addEventListener('click', e => { if (e.target === e.currentTarget) closeOutreach(); });
 
   function exportCSV() {
     if (!allInfluencers.length) return toast('No influencers to export', 'error');

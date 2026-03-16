@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templates — CreatorFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Creator<span>Flow</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"   class="nav-link"><i data-lucide="layout-dashboard" class="nav-icon"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="influencers.html" class="nav-link"><i data-lucide="users" class="nav-icon"></i> <span data-i18n="nav_influencers">Influencers</span></a>
+      <a href="analytics.html"   class="nav-link"><i data-lucide="bar-chart-2" class="nav-icon"></i> <span data-i18n="nav_analytics">Analytics</span></a>
+      <a href="templates.html"   class="nav-link active"><i data-lucide="mail" class="nav-icon"></i> <span data-i18n="nav_templates">Templates</span></a>
+      <a href="account.html"     class="nav-link"><i data-lucide="user" class="nav-icon"></i> <span data-i18n="nav_account">Account</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="sidebar-upgrade-btn" id="upgrade-btn" data-i18n="btn_upgrade" onclick="openUpgradeModal()" style="display:none">Улучшить</button>
+      <div class="user-info">
+        <span class="user-email" id="user-email">—</span>
+        <button class="logout-btn" data-i18n="logout" onclick="auth.signOut().then(()=>{localStorage.removeItem('cfUid');location.href='index.html'})">Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="trial-banner" id="trial-banner">
+      <span>⏳ <strong><span data-days></span></strong> <span data-i18n="trial_text">left in your free trial — upgrade to keep access.</span></span>
+      <button class="btn btn-primary btn-sm" data-i18n="btn_upgrade_now" onclick="upgradePlan('pro')">Upgrade now</button>
+    </div>
+    <div class="topbar">
+      <h1 data-i18n="tpl_title">Outreach Templates</h1>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="btn btn-primary" data-i18n="tpl_new" onclick="openNew()">New Template</button>
+    </div>
+
+    <div class="page-content">
+      <div id="templates-grid" class="templates-grid">
+        <div class="empty">
+          <div class="empty-icon"><i data-lucide="mail"></i></div>
+          <h3 data-i18n="tpl_empty">No templates yet. Create your first one!</h3>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-tpl">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-tpl-title">New Template</span>
+      <button class="modal-close" onclick="closeTplModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" data-i18n="tpl_name">Template Name</label>
+        <input type="text" id="tpl-name" placeholder="e.g. First Contact">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="tpl_subject">Subject Line</label>
+        <input type="text" id="tpl-subject" placeholder="e.g. Collaboration opportunity with {{name}}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="tpl_body">Message Body</label>
+        <textarea id="tpl-body" rows="8" placeholder="Hi {{name}}! ..."></textarea>
+        <div class="form-hint" data-i18n="tpl_vars_hint">Variables: {{name}}, {{handle}}, {{platform}}, {{niche}}</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeTplModal()">Cancel</button>
+      <button class="btn btn-primary" data-i18n="btn_save" onclick="saveTpl()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="i18n.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="trial.js"></script>
+<script>
+  var currentUser = null, userPlan = 'free', allTemplates = [], editingTplId = null;
+
+  if (!localStorage.getItem('cfUid')) location.href = 'index.html';
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) { localStorage.removeItem('cfUid'); return location.href = 'index.html'; }
+    localStorage.setItem('cfUid', user.uid);
+    currentUser = user;
+    document.getElementById('user-email').textContent = user.email;
+    const snap = await db.collection('users').doc(user.uid).get();
+    const userData = snap.data() || {};
+    userPlan = userData.plan || 'free';
+    const trial = getTrialStatus(userData);
+    applyTrialUI(trial);
+    if (!trial.access) return;
+    loadTemplates();
+  });
+
+  async function loadTemplates() {
+    const snap = await db.collection('users').doc(currentUser.uid).collection('templates').orderBy('createdAt','asc').get();
+    allTemplates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!allTemplates.length) {
+      await seedStarterTemplates();
+      return;
+    }
+    renderTemplates();
+  }
+
+  async function seedStarterTemplates() {
+    const uid = currentUser.uid;
+    const col = db.collection('users').doc(uid).collection('templates');
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    const starters = [
+      {
+        name: 'First Contact',
+        subject: 'Collaboration opportunity — {{name}}',
+        body: "Hi {{name}}!\n\nI've been following your {{platform}} content and love what you do in the {{niche}} space. Your handle {{handle}} really stands out!\n\nWe'd love to explore a collaboration with you. Would you be open to a quick chat?\n\nLooking forward to hearing from you!"
+      },
+      {
+        name: 'Follow-up',
+        subject: 'Following up — {{name}}',
+        body: "Hey {{name}},\n\nJust circling back on my previous message — we're still really keen to work with you!\n\nAs a {{niche}} creator on {{platform}}, you'd be a perfect fit for our campaign. We're flexible on format and happy to discuss terms that work for you.\n\nLet me know if you have any questions!"
+      },
+      {
+        name: 'Collab Offer',
+        subject: 'Paid collab offer for {{handle}}',
+        body: "Hi {{name}},\n\nWe have an exciting paid collaboration offer for you! We've been watching your {{platform}} growth in {{niche}} and we're impressed.\n\nHere's what we're proposing:\n- Sponsored post/story on {{platform}}\n- Competitive flat fee\n- Full creative freedom\n\nInterested? Reply and let's make it happen!"
+      }
+    ];
+    for (const s of starters) {
+      await col.add({ ...s, createdAt: ts });
+    }
+    const newSnap = await col.orderBy('createdAt','asc').get();
+    allTemplates = newSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTemplates();
+  }
+
+  function renderTemplates() {
+    const grid = document.getElementById('templates-grid');
+    if (!allTemplates.length) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon"><i data-lucide="mail"></i></div><h3>' + t('tpl_empty') + '</h3></div>';
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+    grid.innerHTML = allTemplates.map(tpl =>
+      '<div class="card tpl-card">' +
+        '<div class="tpl-card-name">' + esc(tpl.name) + '</div>' +
+        '<div class="tpl-card-subject">' + esc(tpl.subject || '') + '</div>' +
+        '<div class="tpl-card-body">' + esc((tpl.body || '').slice(0, 60)) + ((tpl.body||'').length > 60 ? '…' : '') + '</div>' +
+        '<div class="tpl-card-actions">' +
+          '<button class="btn btn-ghost btn-sm" onclick="openEdit(\'' + tpl.id + '\')" data-i18n="modal_edit_inf">Edit</button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteTpl(\'' + tpl.id + '\')"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function openNew() {
+    editingTplId = null;
+    document.getElementById('modal-tpl-title').textContent = t('tpl_new');
+    document.getElementById('tpl-name').value = '';
+    document.getElementById('tpl-subject').value = '';
+    document.getElementById('tpl-body').value = '';
+    document.getElementById('modal-tpl').classList.add('open');
+  }
+
+  function openEdit(id) {
+    const tpl = allTemplates.find(t => t.id === id);
+    if (!tpl) return;
+    editingTplId = id;
+    document.getElementById('modal-tpl-title').textContent = t('tpl_name');
+    document.getElementById('tpl-name').value = tpl.name || '';
+    document.getElementById('tpl-subject').value = tpl.subject || '';
+    document.getElementById('tpl-body').value = tpl.body || '';
+    document.getElementById('modal-tpl').classList.add('open');
+  }
+
+  async function saveTpl() {
+    const name    = document.getElementById('tpl-name').value.trim();
+    const subject = document.getElementById('tpl-subject').value.trim();
+    const body    = document.getElementById('tpl-body').value.trim();
+    if (!name) return toast(t('toast_enter_name'), 'error');
+    const col = db.collection('users').doc(currentUser.uid).collection('templates');
+    if (editingTplId) {
+      await col.doc(editingTplId).update({ name, subject, body });
+    } else {
+      await col.add({ name, subject, body, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    closeTplModal();
+    toast(t('tpl_saved'), 'success');
+    loadTemplates();
+  }
+
+  async function deleteTpl(id) {
+    await db.collection('users').doc(currentUser.uid).collection('templates').doc(id).delete();
+    toast(t('tpl_deleted'), 'success');
+    loadTemplates();
+  }
+
+  function closeTplModal() { document.getElementById('modal-tpl').classList.remove('open'); }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.className = 'toast ' + (type||'success') + ' show';
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  document.addEventListener('langchange', () => renderTemplates());
+  document.getElementById('modal-tpl').addEventListener('click', e => { if (e.target === e.currentTarget) closeTplModal(); });
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
+</body>
+</html>

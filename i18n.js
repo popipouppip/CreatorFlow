@@ -347,6 +347,17 @@ const LANGS = {
     acc_exit_demo:        'Exit Demo',
     acc_demo_data:        'Demo Data',
     nav_signout:          'Sign out',
+    acc_security_title:   'Security',
+    acc_change_pass:      'Change password',
+    acc_pass_ph:          'New password (min 6 chars)',
+    acc_save_pass:        'Save',
+    acc_pass_saved:       'Password updated!',
+    acc_relogin:          'Please sign out and sign back in, then try again.',
+    acc_danger_title:     'Danger zone',
+    acc_delete_title:     'Delete account',
+    acc_delete_sub:       'All your data will be permanently deleted.',
+    acc_delete_btn:       'Delete my account',
+    acc_delete_confirm:   'This will permanently delete all your campaigns, influencers, and data. This cannot be undone.',
   },
 
   ru: {
@@ -689,6 +700,17 @@ const LANGS = {
     acc_exit_demo:        'Выйти из демо',
     acc_demo_data:        'Демо данные',
     nav_signout:          'Выйти',
+    acc_security_title:   'Безопасность',
+    acc_change_pass:      'Изменить пароль',
+    acc_pass_ph:          'Новый пароль (мин. 6 символов)',
+    acc_save_pass:        'Сохранить',
+    acc_pass_saved:       'Пароль обновлён!',
+    acc_relogin:          'Выйдите и войдите снова, затем попробуйте ещё раз.',
+    acc_danger_title:     'Опасная зона',
+    acc_delete_title:     'Удалить аккаунт',
+    acc_delete_sub:       'Все данные будут удалены безвозвратно.',
+    acc_delete_btn:       'Удалить мой аккаунт',
+    acc_delete_confirm:   'Все ваши кампании, инфлюенсеры и данные будут удалены навсегда. Это действие нельзя отменить.',
   }
 };
 

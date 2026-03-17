@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — CreatorFlow</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -223,7 +225,7 @@
   function renderCampaigns(campaigns) {
     const el = document.getElementById('campaigns-list');
     if (!campaigns.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-icon"><i data-lucide="clipboard-list"></i></div><h3>' + t('no_campaigns') + '</h3><p>' + t('no_campaigns_sub') + '</p></div>';
+      el.innerHTML = '<div class="empty"><div class="empty-icon"><i data-lucide="clipboard-list"></i></div><h3>' + t('no_campaigns') + '</h3><p>' + t('no_campaigns_sub') + '</p><button class="btn btn-primary" style="margin-top:16px" onclick="openNewCampaign()">' + t('dash_new_campaign') + '</button></div>';
       return;
     }
     el.innerHTML = '<div class="campaign-list">' + campaigns.map(c =>

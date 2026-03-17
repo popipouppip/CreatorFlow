@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Account — CreatorFlow</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -74,6 +76,37 @@
           <span class="card-title" data-i18n="acc_features_title">What's included in your plan</span>
         </div>
         <div class="account-features" id="plan-features"></div>
+      </div>
+
+      <!-- Security -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" data-i18n="acc_security_title">Security</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px" data-i18n="acc_change_pass">Change password</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input type="password" id="new-pass" data-i18n-ph="acc_pass_ph" placeholder="New password (min 6 chars)" style="flex:1;min-width:200px">
+              <button class="btn btn-ghost btn-sm" onclick="changePassword()" data-i18n="acc_save_pass">Save</button>
+            </div>
+            <p class="auth-error" id="pass-msg" style="display:none;margin-top:6px"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="card" style="border-color:#fee2e2">
+        <div class="card-header">
+          <span class="card-title" style="color:#dc2626" data-i18n="acc_danger_title">Danger zone</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:14px;font-weight:500" data-i18n="acc_delete_title">Delete account</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px" data-i18n="acc_delete_sub">All your data will be permanently deleted.</div>
+          </div>
+          <button class="btn btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="confirmDeleteAccount()" data-i18n="acc_delete_btn">Delete my account</button>
+        </div>
       </div>
 
     </div>
@@ -214,6 +247,42 @@ async function openPortal() {
 
 function handleDemoBtn() {
   if (isDemoMode()) { cleanAndExitDemo(); } else { location.href = 'dashboard.html?demo=1'; }
+}
+
+async function changePassword() {
+  const pass = document.getElementById('new-pass').value.trim();
+  const msg  = document.getElementById('pass-msg');
+  msg.style.display = 'none';
+  if (pass.length < 6) { msg.textContent = t('err_weak_pass'); msg.style.display = 'block'; return; }
+  try {
+    await auth.currentUser.updatePassword(pass);
+    msg.style.color = 'var(--green)';
+    msg.textContent = t('acc_pass_saved');
+    msg.style.display = 'block';
+    document.getElementById('new-pass').value = '';
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = e.code === 'auth/requires-recent-login' ? t('acc_relogin') : t('err_generic');
+    msg.style.display = 'block';
+  }
+}
+
+function confirmDeleteAccount() {
+  openDemoConfirm(t('acc_delete_title'), t('acc_delete_confirm'), deleteAccount);
+}
+
+async function deleteAccount() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    const uid = user.uid;
+    await db.collection('users').doc(uid).delete();
+    await user.delete();
+    localStorage.removeItem('cfUid');
+    location.href = 'index.html';
+  } catch(e) {
+    toast(e.code === 'auth/requires-recent-login' ? t('acc_relogin') : t('err_generic'), 'error');
+  }
 }
 </script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>

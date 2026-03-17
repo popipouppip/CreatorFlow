@@ -125,21 +125,9 @@
     const col = db.collection('users').doc(uid).collection('templates');
     const ts = firebase.firestore.FieldValue.serverTimestamp();
     const starters = [
-      {
-        name: 'First Contact',
-        subject: 'Collaboration opportunity — {{name}}',
-        body: "Hi {{name}}!\n\nI've been following your {{platform}} content and love what you do in the {{niche}} space. Your handle {{handle}} really stands out!\n\nWe'd love to explore a collaboration with you. Would you be open to a quick chat?\n\nLooking forward to hearing from you!"
-      },
-      {
-        name: 'Follow-up',
-        subject: 'Following up — {{name}}',
-        body: "Hey {{name}},\n\nJust circling back on my previous message — we're still really keen to work with you!\n\nAs a {{niche}} creator on {{platform}}, you'd be a perfect fit for our campaign. We're flexible on format and happy to discuss terms that work for you.\n\nLet me know if you have any questions!"
-      },
-      {
-        name: 'Collab Offer',
-        subject: 'Paid collab offer for {{handle}}',
-        body: "Hi {{name}},\n\nWe have an exciting paid collaboration offer for you! We've been watching your {{platform}} growth in {{niche}} and we're impressed.\n\nHere's what we're proposing:\n- Sponsored post/story on {{platform}}\n- Competitive flat fee\n- Full creative freedom\n\nInterested? Reply and let's make it happen!"
-      }
+      { starterKey: 'starter_first' },
+      { starterKey: 'starter_followup' },
+      { starterKey: 'starter_collab' }
     ];
     for (const s of starters) {
       await col.add({ ...s, createdAt: ts });
@@ -149,6 +137,19 @@
     renderTemplates();
   }
 
+  // Migrate old starter templates that have English name but no starterKey
+  const STARTER_NAME_MAP = {
+    'First Contact': 'starter_first',
+    'Follow-up': 'starter_followup',
+    'Collab Offer': 'starter_collab'
+  };
+
+  function getTplText(tpl, field) {
+    const key = tpl.starterKey || STARTER_NAME_MAP[tpl.name];
+    if (key) return t(key + '_' + field);
+    return tpl[field] || '';
+  }
+
   function renderTemplates() {
     const grid = document.getElementById('templates-grid');
     if (!allTemplates.length) {
@@ -156,17 +157,20 @@
       if (window.lucide) lucide.createIcons();
       return;
     }
-    grid.innerHTML = allTemplates.map(tpl =>
-      '<div class="card tpl-card">' +
-        '<div class="tpl-card-name">' + esc(tpl.name) + '</div>' +
-        '<div class="tpl-card-subject">' + esc(tpl.subject || '') + '</div>' +
-        '<div class="tpl-card-body">' + esc((tpl.body || '').slice(0, 60)) + ((tpl.body||'').length > 60 ? '…' : '') + '</div>' +
+    grid.innerHTML = allTemplates.map(tpl => {
+      const name    = getTplText(tpl, 'name');
+      const subject = getTplText(tpl, 'subject');
+      const body    = getTplText(tpl, 'body');
+      return '<div class="card tpl-card">' +
+        '<div class="tpl-card-name">' + esc(name) + '</div>' +
+        '<div class="tpl-card-subject">' + esc(subject) + '</div>' +
+        '<div class="tpl-card-body">' + esc(body.slice(0, 60)) + (body.length > 60 ? '…' : '') + '</div>' +
         '<div class="tpl-card-actions">' +
           '<button class="btn btn-ghost btn-sm" onclick="openEdit(\'' + tpl.id + '\')">' + t('btn_edit') + '</button>' +
           '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteTpl(\'' + tpl.id + '\')">' + t('btn_delete') + '</button>' +
         '</div>' +
-      '</div>'
-    ).join('');
+      '</div>';
+    }).join('');
     if (window.lucide) lucide.createIcons();
   }
 
@@ -184,9 +188,9 @@
     if (!tpl) return;
     editingTplId = id;
     document.getElementById('modal-tpl-title').textContent = t('tpl_name');
-    document.getElementById('tpl-name').value = tpl.name || '';
-    document.getElementById('tpl-subject').value = tpl.subject || '';
-    document.getElementById('tpl-body').value = tpl.body || '';
+    document.getElementById('tpl-name').value    = getTplText(tpl, 'name');
+    document.getElementById('tpl-subject').value = getTplText(tpl, 'subject');
+    document.getElementById('tpl-body').value    = getTplText(tpl, 'body');
     document.getElementById('modal-tpl').classList.add('open');
   }
 

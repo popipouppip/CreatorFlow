@@ -1120,6 +1120,17 @@ tbody tr:hover td { background: var(--surface2); }
 .best-performer-stats { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
 .best-performer-stats span { font-weight: 500; }
 
+/* tag picker */
+.tag-picker { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0; }
+.tag-chip {
+  display: inline-block; font-size: 12px; font-weight: 500;
+  padding: 5px 12px; border-radius: 20px; cursor: pointer;
+  background: var(--surface2); color: var(--muted);
+  border: 1.5px solid var(--border); transition: all 0.15s; user-select: none;
+}
+.tag-chip:hover { border-color: var(--accent); color: var(--accent); }
+.tag-chip-active { background: var(--accent) !important; color: var(--surface) !important; border-color: var(--accent) !important; }
+
 /* influencer tags */
 .inf-tag {
   display: inline-block; font-size: 10px; font-weight: 600;

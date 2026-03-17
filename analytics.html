@@ -39,6 +39,7 @@
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
       <button class="btn btn-ghost btn-sm" id="export-btn" data-i18n="btn_export" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
     </div>
 
     <div class="page-content">
@@ -169,6 +170,8 @@
     const planLabelEl = document.getElementById('plan-label'); if (planLabelEl) planLabelEl.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
     const trial = getTrialStatus(userData);
     applyTrialUI(trial);
+    const demoBtn = document.getElementById('demo-toggle-btn');
+    if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons(); }
     if (!trial.access) return;
     loadAnalytics();
   });
@@ -324,6 +327,10 @@
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   document.addEventListener('langchange', () => { if (allData.length) renderAnalytics(); });
+
+  function handleDemoBtn() {
+    if (isDemoMode()) { cleanAndExitDemo(); } else { location.href = 'dashboard.html?demo=1'; }
+  }
 </script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>

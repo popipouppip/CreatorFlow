@@ -38,6 +38,7 @@
         <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
       <button class="btn btn-primary" data-i18n="tpl_new" onclick="openNew()">New Template</button>
     </div>
 
@@ -103,6 +104,8 @@
     userPlan = userData.plan || 'free';
     const trial = getTrialStatus(userData);
     applyTrialUI(trial);
+    const demoBtn = document.getElementById('demo-toggle-btn');
+    if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons(); }
     if (!trial.access) return;
     loadTemplates();
   });
@@ -159,8 +162,8 @@
         '<div class="tpl-card-subject">' + esc(tpl.subject || '') + '</div>' +
         '<div class="tpl-card-body">' + esc((tpl.body || '').slice(0, 60)) + ((tpl.body||'').length > 60 ? '…' : '') + '</div>' +
         '<div class="tpl-card-actions">' +
-          '<button class="btn btn-ghost btn-sm" onclick="openEdit(\'' + tpl.id + '\')" data-i18n="modal_edit_inf">Edit</button>' +
-          '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteTpl(\'' + tpl.id + '\')"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="openEdit(\'' + tpl.id + '\')">' + t('btn_edit') + '</button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteTpl(\'' + tpl.id + '\')">' + t('btn_delete') + '</button>' +
         '</div>' +
       '</div>'
     ).join('');
@@ -220,6 +223,10 @@
 
   document.addEventListener('langchange', () => renderTemplates());
   document.getElementById('modal-tpl').addEventListener('click', e => { if (e.target === e.currentTarget) closeTplModal(); });
+
+  function handleDemoBtn() {
+    if (isDemoMode()) { cleanAndExitDemo(); } else { location.href = 'dashboard.html?demo=1'; }
+  }
 </script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>

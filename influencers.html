@@ -40,6 +40,7 @@
       </div>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
       <button class="btn btn-ghost btn-sm" data-i18n="btn_import_csv" onclick="openImport()"><i data-lucide="upload" class="btn-icon-sm"></i> Import CSV</button>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
       <button class="btn btn-primary" data-i18n="btn_add_influencer" onclick="openAdd()">+ Add Influencer</button>
     </div>
 
@@ -178,8 +179,7 @@
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="label_tags">Tags</label>
-        <input type="text" id="f-tags" data-i18n-ph="ph_tags" placeholder="vip, responsive, fashion…">
-        <div class="form-hint" data-i18n="hint_tags">Comma-separated labels</div>
+        <div class="tag-picker" id="tag-picker"></div>
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="label_notes">Notes</label>
@@ -228,7 +228,35 @@
 <script src="trial.js"></script>
 <script>
   const LIMITS = { free: 10, pro: 100, agency: Infinity };
-  var currentUser = null, userPlan = 'free', allInfluencers = [], editingId = null;
+  var currentUser = null, userPlan = 'free', allInfluencers = [], editingId = null, selectedTags = [];
+
+  const PRESET_TAGS = [
+    { key: 'vip',        en: 'VIP',            ru: 'VIP' },
+    { key: 'responsive', en: 'Responsive',      ru: 'Отзывчивый' },
+    { key: 'top',        en: 'Top Performer',   ru: 'Топ' },
+    { key: 'micro',      en: 'Micro',           ru: 'Микро' },
+    { key: 'premium',    en: 'Premium',         ru: 'Премиум' },
+    { key: 'new',        en: 'New Contact',     ru: 'Новый контакт' },
+    { key: 'no',         en: 'Do Not Use',      ru: 'Не работать' },
+    { key: 'negotiate',  en: 'Negotiating',     ru: 'Переговоры' },
+  ];
+
+  function renderTagPicker() {
+    const el = document.getElementById('tag-picker');
+    if (!el) return;
+    const lang = localStorage.getItem('cf_lang') || 'en';
+    el.innerHTML = PRESET_TAGS.map(tag =>
+      '<span class="tag-chip' + (selectedTags.includes(tag.key) ? ' tag-chip-active' : '') + '" onclick="toggleTag(\'' + tag.key + '\')">' +
+        (lang === 'ru' ? tag.ru : tag.en) +
+      '</span>'
+    ).join('');
+  }
+
+  function toggleTag(key) {
+    const i = selectedTags.indexOf(key);
+    if (i >= 0) selectedTags.splice(i, 1); else selectedTags.push(key);
+    renderTagPicker();
+  }
   var allTemplates = [], outreachInfluencer = null;
 
   if (!localStorage.getItem('cfUid')) location.href = 'index.html';
@@ -244,6 +272,8 @@
     const planLabelEl = document.getElementById('plan-label'); if (planLabelEl) planLabelEl.textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
     const trial = getTrialStatus(userData);
     applyTrialUI(trial);
+    const demoBtn = document.getElementById('demo-toggle-btn');
+    if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons(); }
     if (!trial.access) return;
     loadInfluencers();
   });
@@ -308,10 +338,15 @@
   function buildTagFilter() {
     const all = new Set();
     allInfluencers.forEach(i => (i.tags||[]).forEach(tag => all.add(tag)));
+    const lang = localStorage.getItem('cf_lang') || 'en';
     const sel = document.getElementById('filter-tag');
     const cur = sel.value;
     sel.innerHTML = '<option value="">' + t('all_tags') + '</option>' +
-      [...all].sort().map(tag => '<option value="' + esc(tag) + '"' + (tag===cur?' selected':'') + '>' + esc(tag) + '</option>').join('');
+      [...all].sort().map(key => {
+        const p = PRESET_TAGS.find(t => t.key === key);
+        const label = p ? (lang === 'ru' ? p.ru : p.en) : key;
+        return '<option value="' + esc(key) + '"' + (key===cur?' selected':'') + '>' + esc(label) + '</option>';
+      }).join('');
   }
 
   function renderTable() {
@@ -343,7 +378,7 @@
         '<td>' + esc(i.niche) + '</td>' +
         '<td class="td-num">' + fmtNum(i.followers) + '</td>' +
         '<td style="font-size:12px;color:var(--muted)">' + esc(i.contact||'—') + '</td>' +
-        '<td>' + (i.tags||[]).map(tag => '<span class="inf-tag">' + esc(tag) + '</span>').join('') + '</td>' +
+        '<td>' + (i.tags||[]).map(key => { const p = PRESET_TAGS.find(t=>t.key===key); const lang = localStorage.getItem('cf_lang')||'en'; return '<span class="inf-tag">' + esc(p ? (lang==='ru'?p.ru:p.en) : key) + '</span>'; }).join('') + '</td>' +
         '<td><div class="td-actions">' +
           '<button class="btn-icon" title="' + t('btn_outreach') + '" onclick="openOutreach(\'' + i.id + '\')">✉</button>' +
           '<button class="btn-icon" title="Edit" onclick="openEdit(\'' + i.id + '\')"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>' +
@@ -357,7 +392,8 @@
   function openAdd() {
     editingId = null;
     document.getElementById('modal-title').textContent = t('modal_add_inf');
-    ['f-name','f-handle','f-contact','f-url','f-notes','f-tags'].forEach(id => document.getElementById(id).value = '');
+    ['f-name','f-handle','f-contact','f-url','f-notes'].forEach(id => document.getElementById(id).value = '');
+    selectedTags = []; renderTagPicker();
     document.getElementById('f-followers').value = '';
     document.getElementById('f-platform').value = 'instagram';
     document.getElementById('f-niche').value = 'fashion';
@@ -376,8 +412,9 @@
     document.getElementById('f-followers').value = inf.followers || '';
     document.getElementById('f-contact').value  = inf.contact || '';
     document.getElementById('f-url').value      = inf.url || '';
-    document.getElementById('f-notes').value    = inf.notes || '';
-    document.getElementById('f-tags').value     = (inf.tags||[]).join(', ');
+    document.getElementById('f-notes').value = inf.notes || '';
+    selectedTags = (inf.tags||[]).filter(k => PRESET_TAGS.some(p => p.key === k));
+    renderTagPicker();
     document.getElementById('modal-inf').classList.add('open');
   }
 
@@ -391,7 +428,7 @@
       contact:   document.getElementById('f-contact').value.trim(),
       url:       document.getElementById('f-url').value.trim(),
       notes:     document.getElementById('f-notes').value.trim(),
-      tags:      document.getElementById('f-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
+      tags:      [...selectedTags],
     };
     if (!data.name) return toast(t('toast_enter_name_inf'), 'error');
     if (!data.handle) return toast(t('toast_enter_handle'), 'error');
@@ -435,7 +472,7 @@
     setTimeout(() => el.classList.remove('show'), 3000);
   }
 
-  document.addEventListener('langchange', () => renderTable());
+  document.addEventListener('langchange', () => { renderTable(); renderTagPicker(); });
   document.getElementById('modal-inf').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
   document.getElementById('modal-outreach').addEventListener('click', e => { if (e.target === e.currentTarget) closeOutreach(); });
 
@@ -533,6 +570,10 @@
     closeImport();
     toast(t('import_done', { n: toImport.length }), 'success');
     loadInfluencers();
+  }
+
+  function handleDemoBtn() {
+    if (isDemoMode()) { cleanAndExitDemo(); } else { location.href = 'dashboard.html?demo=1'; }
   }
 </script>
 <div class="modal-overlay" id="modal-import">

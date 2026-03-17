@@ -48,6 +48,8 @@
         <div style="font-size:13px;color:var(--muted)"><span data-i18n="label_budget_disp">Budget:</span> <strong id="budget-display" style="color:var(--accent)">—</strong></div>
         <div style="font-size:13px;color:var(--muted)"><span data-i18n="label_spent_disp">Spent:</span> <strong id="spent-display" style="color:var(--green)">—</strong></div>
         <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
+        <button class="btn btn-ghost btn-sm" data-i18n="btn_import_csv" onclick="openDealImport()"><i data-lucide="upload" class="btn-icon-sm"></i> Import CSV</button>
+        <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
         <button class="btn btn-primary" data-i18n="btn_add_deal" onclick="openAddDeal()">+ Add Deal</button>
       </div>
     </div>
@@ -170,6 +172,8 @@
     document.getElementById('plan-label').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
     const trial = getTrialStatus(userData);
     applyTrialUI(trial);
+    const demoBtn = document.getElementById('demo-toggle-btn');
+    if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons(); }
     if (!trial.access) return;
 
     allInfluencers = infSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -382,6 +386,94 @@
   });
   document.getElementById('modal-deal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-deal'); });
 
+  function handleDemoBtn() {
+    if (isDemoMode()) { cleanAndExitDemo(); } else { location.href = 'dashboard.html?demo=1'; }
+  }
+
+  // Deal CSV Import
+  let dealImportRows = [];
+
+  function openDealImport() {
+    dealImportRows = [];
+    document.getElementById('deal-csv-file').value = '';
+    document.getElementById('deal-import-preview').style.display = 'none';
+    document.getElementById('deal-import-confirm-btn').disabled = true;
+    document.getElementById('modal-deal-import').classList.add('open');
+  }
+  function closeDealImport() { document.getElementById('modal-deal-import').classList.remove('open'); }
+
+  function parseCSVLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  function previewDealCSV(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) { toast('File is empty or invalid', 'error'); return; }
+      const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g,''));
+      const COLS = { influencername:0, handle:1, platform:2, stage:3, amount:4, reach:5, deadline:6, notes:7 };
+      const idx = {};
+      Object.keys(COLS).forEach(k => { idx[k] = header.indexOf(k); if (idx[k] < 0) idx[k] = COLS[k]; });
+      const VALID_STAGES = ['found','contacted','negotiating','agreed','posted','paid'];
+      const PLATFORMS = ['instagram','tiktok','youtube','twitter','twitch','other'];
+      dealImportRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        const name = idx.influencername >= 0 ? cols[idx.influencername] : cols[0] || '';
+        if (!name) continue;
+        let platform = (idx.platform >= 0 ? cols[idx.platform] : cols[2] || '').toLowerCase();
+        if (!PLATFORMS.includes(platform)) platform = 'other';
+        let stage = (idx.stage >= 0 ? cols[idx.stage] : cols[3] || '').toLowerCase();
+        if (!VALID_STAGES.includes(stage)) stage = 'found';
+        dealImportRows.push({
+          influencerName: name,
+          handle: idx.handle >= 0 ? cols[idx.handle] : cols[1] || '',
+          platform,
+          stage,
+          amount: parseFloat(idx.amount >= 0 ? cols[idx.amount] : cols[4]) || 0,
+          reach: parseInt(idx.reach >= 0 ? cols[idx.reach] : cols[5]) || 0,
+          deadline: idx.deadline >= 0 ? cols[idx.deadline] : cols[6] || '',
+          notes: idx.notes >= 0 ? cols[idx.notes] : cols[7] || '',
+        });
+      }
+      const preview = dealImportRows.slice(0,5);
+      document.getElementById('deal-import-count').textContent = dealImportRows.length + ' deals ready to import';
+      document.getElementById('deal-import-preview-table').innerHTML =
+        '<table style="width:100%;border-collapse:collapse"><tr>' +
+        ['Name','Platform','Stage','Amount'].map(h => '<th style="text-align:left;padding:4px;border-bottom:1px solid var(--border)">' + h + '</th>').join('') +
+        '</tr>' +
+        preview.map(r => '<tr>' + [r.influencerName,r.platform,r.stage,r.amount].map(v => '<td style="padding:4px;border-bottom:1px solid var(--border);font-size:12px">' + v + '</td>').join('') + '</tr>').join('') +
+        '</table>';
+      document.getElementById('deal-import-preview').style.display = '';
+      document.getElementById('deal-import-confirm-btn').disabled = dealImportRows.length === 0;
+    };
+    reader.readAsText(file);
+  }
+
+  async function confirmDealImport() {
+    if (!dealImportRows.length) return;
+    document.getElementById('deal-import-confirm-btn').disabled = true;
+    const col = db.collection('users').doc(currentUser.uid).collection(demoCol('campaigns')).doc(campaignId).collection('deals');
+    const batch = db.batch();
+    dealImportRows.forEach(row => {
+      batch.set(col.doc(), { ...row, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    await batch.commit();
+    closeDealImport();
+    toast(dealImportRows.length + ' deals imported!', 'success');
+    loadDeals();
+  }
+
   function exportCSV() {
     if (!allDeals.length) return toast('No deals to export', 'error');
     const rows = [['Influencer','Platform','Stage','Amount','Reach','Deadline','Post URL','Notes']];
@@ -390,6 +482,29 @@
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'deals.csv'; a.click();
   }
 </script>
+<div class="modal-overlay" id="modal-deal-import">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" data-i18n="import_title">Import CSV</span>
+      <button class="modal-close" onclick="closeDealImport()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Columns: Influencer Name, Handle, Platform, Stage, Amount, Reach, Deadline, Notes</p>
+      <div class="form-group">
+        <input type="file" id="deal-csv-file" accept=".csv" onchange="previewDealCSV(event)">
+      </div>
+      <div id="deal-import-preview" style="display:none">
+        <p id="deal-import-count" style="font-size:13px;font-weight:600;margin-bottom:8px"></p>
+        <div id="deal-import-preview-table" style="max-height:200px;overflow-y:auto;font-size:12px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeDealImport()">Cancel</button>
+      <button class="btn btn-primary" id="deal-import-confirm-btn" onclick="confirmDealImport()" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>

@@ -30,6 +30,7 @@
   <main class="main">
     <div class="topbar">
       <h1 data-i18n="nav_account">Account</h1>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
     </div>
     <div class="page-content">
 
@@ -119,6 +120,8 @@ auth.onAuthStateChanged(user => {
   document.getElementById('profile-email').textContent = user.email;
   const initials = user.email.slice(0, 2).toUpperCase();
   document.getElementById('avatar-initials').textContent = initials;
+  const demoBtn = document.getElementById('demo-toggle-btn');
+  if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons(); }
 
   db.collection('users').doc(user.uid).onSnapshot(snap => {
     const data = snap.data() || {};
@@ -197,6 +200,10 @@ async function openPortal() {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Manage billing →'; }
   }
+}
+
+function handleDemoBtn() {
+  if (isDemoMode()) { cleanAndExitDemo(); } else { location.href = 'dashboard.html?demo=1'; }
 }
 </script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>

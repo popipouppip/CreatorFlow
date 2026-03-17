@@ -39,6 +39,7 @@
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
+      <button class="btn btn-ghost btn-sm" data-i18n="btn_import_csv" onclick="openCampImport()"><i data-lucide="upload" class="btn-icon-sm"></i> Import CSV</button>
       <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
       <button class="btn btn-primary" data-i18n="dash_new_campaign" onclick="openNewCampaign()">+ New Campaign</button>
     </div>
@@ -361,7 +362,107 @@
     const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'campaigns.csv'; a.click();
   }
+
+  // Campaign CSV Import
+  let campImportRows = [];
+
+  function openCampImport() {
+    campImportRows = [];
+    document.getElementById('camp-csv-file').value = '';
+    document.getElementById('camp-import-preview').style.display = 'none';
+    document.getElementById('camp-import-confirm-btn').disabled = true;
+    document.getElementById('modal-camp-import').classList.add('open');
+  }
+  function closeCampImport() { document.getElementById('modal-camp-import').classList.remove('open'); }
+
+  function parseCampCSVLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  function previewCampCSV(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) { toast('File is empty or invalid', 'error'); return; }
+      const header = parseCampCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g,''));
+      const COLS = { name:0, description:1, budget:2, status:3 };
+      const idx = {};
+      Object.keys(COLS).forEach(k => { idx[k] = header.indexOf(k); if (idx[k] < 0) idx[k] = COLS[k]; });
+      campImportRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCampCSVLine(lines[i]);
+        const name = idx.name >= 0 ? cols[idx.name] : cols[0] || '';
+        if (!name) continue;
+        let status = (idx.status >= 0 ? cols[idx.status] : cols[3] || '').toLowerCase();
+        if (status !== 'archived') status = 'active';
+        campImportRows.push({
+          name,
+          description: idx.description >= 0 ? cols[idx.description] : cols[1] || '',
+          budget: parseFloat(idx.budget >= 0 ? cols[idx.budget] : cols[2]) || 0,
+          status,
+        });
+      }
+      const preview = campImportRows.slice(0,5);
+      document.getElementById('camp-import-count').textContent = campImportRows.length + ' campaigns ready to import';
+      document.getElementById('camp-import-preview-table').innerHTML =
+        '<table style="width:100%;border-collapse:collapse"><tr>' +
+        ['Name','Budget','Status'].map(h => '<th style="text-align:left;padding:4px;border-bottom:1px solid var(--border)">' + h + '</th>').join('') +
+        '</tr>' +
+        preview.map(r => '<tr>' + [r.name, '$'+r.budget, r.status].map(v => '<td style="padding:4px;border-bottom:1px solid var(--border);font-size:12px">' + v + '</td>').join('') + '</tr>').join('') +
+        '</table>';
+      document.getElementById('camp-import-preview').style.display = '';
+      document.getElementById('camp-import-confirm-btn').disabled = campImportRows.length === 0;
+    };
+    reader.readAsText(file);
+  }
+
+  async function confirmCampImport() {
+    if (!campImportRows.length) return;
+    document.getElementById('camp-import-confirm-btn').disabled = true;
+    const uid = currentUser.uid;
+    const col = db.collection('users').doc(uid).collection(demoCol('campaigns'));
+    const batch = db.batch();
+    campImportRows.forEach(row => {
+      batch.set(col.doc(), { ...row, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    await batch.commit();
+    closeCampImport();
+    toast(campImportRows.length + ' campaigns imported!', 'success');
+    loadDashboard();
+  }
 </script>
+<div class="modal-overlay" id="modal-camp-import">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" data-i18n="import_title">Import CSV</span>
+      <button class="modal-close" onclick="closeCampImport()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Columns: Name, Description, Budget, Status (active/archived)</p>
+      <div class="form-group">
+        <input type="file" id="camp-csv-file" accept=".csv" onchange="previewCampCSV(event)">
+      </div>
+      <div id="camp-import-preview" style="display:none">
+        <p id="camp-import-count" style="font-size:13px;font-weight:600;margin-bottom:8px"></p>
+        <div id="camp-import-preview-table" style="max-height:200px;overflow-y:auto;font-size:12px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeCampImport()">Cancel</button>
+      <button class="btn btn-primary" id="camp-import-confirm-btn" onclick="confirmCampImport()" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>

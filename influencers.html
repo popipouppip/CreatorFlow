@@ -39,6 +39,7 @@
         <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download" class="btn-icon-sm"></i> Export CSV</button>
+      <button class="btn btn-ghost btn-sm" data-i18n="btn_import_csv" onclick="openImport()"><i data-lucide="upload" class="btn-icon-sm"></i> Import CSV</button>
       <button class="btn btn-primary" data-i18n="btn_add_influencer" onclick="openAdd()">+ Add Influencer</button>
     </div>
 
@@ -440,12 +441,123 @@
 
   function exportCSV() {
     if (!allInfluencers.length) return toast('No influencers to export', 'error');
-    const rows = [['Name','Platform','Handle','Niche','Followers','Contact','URL','Notes']];
-    allInfluencers.forEach(i => rows.push([i.name||'',i.platform||'',i.handle||'',i.niche||'',i.followers||0,i.contact||'',i.url||'',i.notes||'']));
+    const rows = [['Name','Platform','Handle','Niche','Followers','Contact','URL','Notes','Tags']];
+    allInfluencers.forEach(i => rows.push([i.name||'',i.platform||'',i.handle||'',i.niche||'',i.followers||0,i.contact||'',i.url||'',i.notes||'',(i.tags||[]).join(';')]));
     const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'influencers.csv'; a.click();
   }
+
+  let importRows = [];
+
+  function openImport() {
+    importRows = [];
+    document.getElementById('csv-file').value = '';
+    document.getElementById('import-preview').style.display = 'none';
+    document.getElementById('import-confirm-btn').disabled = true;
+    document.getElementById('modal-import').classList.add('open');
+  }
+  function closeImport() { document.getElementById('modal-import').classList.remove('open'); }
+
+  function parseCSVLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else { inQ = !inQ; } }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  function previewCSV(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) return toast(t('import_empty'), 'error');
+      const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g,''));
+      const COLS = { name:0, platform:1, handle:2, niche:3, followers:4, contact:5, url:6, notes:7, tags:8 };
+      const idx = {};
+      Object.keys(COLS).forEach(k => {
+        const fi = header.findIndex(h => h.includes(k));
+        idx[k] = fi >= 0 ? fi : -1;
+      });
+      importRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        const name = idx.name >= 0 ? cols[idx.name] : cols[0] || '';
+        if (!name) continue;
+        const PLATFORMS = ['instagram','tiktok','youtube','twitter','twitch','other'];
+        let plat = idx.platform >= 0 ? cols[idx.platform]?.toLowerCase() : '';
+        if (!PLATFORMS.includes(plat)) plat = 'instagram';
+        importRows.push({
+          name,
+          platform:  plat,
+          handle:    idx.handle   >= 0 ? cols[idx.handle]   : '',
+          niche:     idx.niche    >= 0 ? cols[idx.niche]     : 'other',
+          followers: idx.followers>= 0 ? Number(cols[idx.followers])||0 : 0,
+          contact:   idx.contact  >= 0 ? cols[idx.contact]   : '',
+          url:       idx.url      >= 0 ? cols[idx.url]       : '',
+          notes:     idx.notes    >= 0 ? cols[idx.notes]     : '',
+          tags:      idx.tags     >= 0 ? cols[idx.tags].split(';').map(s=>s.trim()).filter(Boolean) : [],
+        });
+      }
+      document.getElementById('import-count').textContent = t('import_ready', { n: importRows.length });
+      document.getElementById('import-preview-table').innerHTML =
+        '<table style="width:100%"><thead><tr><th>Name</th><th>Platform</th><th>Handle</th><th>Followers</th></tr></thead><tbody>' +
+        importRows.slice(0,10).map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.platform) + '</td><td>' + esc(r.handle) + '</td><td>' + fmtNum(r.followers) + '</td></tr>').join('') +
+        (importRows.length > 10 ? '<tr><td colspan="4" style="color:var(--muted)">+' + (importRows.length-10) + ' more…</td></tr>' : '') +
+        '</tbody></table>';
+      document.getElementById('import-preview').style.display = '';
+      document.getElementById('import-confirm-btn').disabled = importRows.length === 0;
+    };
+    reader.readAsText(file);
+  }
+
+  async function confirmImport() {
+    if (!importRows.length) return;
+    document.getElementById('import-confirm-btn').disabled = true;
+    const uid = currentUser.uid;
+    const limit = LIMITS[userPlan].influencers;
+    const existing = await db.collection('users').doc(uid).collection(demoCol('influencers')).get();
+    const slots = limit - existing.size;
+    if (slots <= 0) { toast(t('plan_limit_influencers', { n: limit }), 'error'); closeImport(); return; }
+    const toImport = importRows.slice(0, slots);
+    const batch = db.batch();
+    toImport.forEach(row => {
+      const ref = db.collection('users').doc(uid).collection(demoCol('influencers')).doc();
+      batch.set(ref, { ...row, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    await batch.commit();
+    closeImport();
+    toast(t('import_done', { n: toImport.length }), 'success');
+    loadInfluencers();
+  }
 </script>
+<div class="modal-overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" data-i18n="import_title">Import CSV</span>
+      <button class="modal-close" onclick="closeImport()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px" data-i18n="import_hint">Columns: Name, Platform, Handle, Niche, Followers, Contact, URL, Notes, Tags</p>
+      <div class="form-group">
+        <input type="file" id="csv-file" accept=".csv" onchange="previewCSV(event)">
+      </div>
+      <div id="import-preview" style="display:none">
+        <p id="import-count" style="font-size:13px;font-weight:600;margin-bottom:8px"></p>
+        <div id="import-preview-table" style="max-height:200px;overflow-y:auto;font-size:12px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-i18n="btn_cancel" onclick="closeImport()">Cancel</button>
+      <button class="btn btn-primary" id="import-confirm-btn" data-i18n="btn_import_confirm" onclick="confirmImport()" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>

@@ -1114,6 +1114,12 @@ tbody tr:hover td { background: var(--surface2); }
   .demo-section-inner .btn { margin-left: 0; width: 100%; }
 }
 
+/* best performer */
+.best-performer { padding: 16px; }
+.best-performer-name { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+.best-performer-stats { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.best-performer-stats span { font-weight: 500; }
+
 /* influencer tags */
 .inf-tag {
   display: inline-block; font-size: 10px; font-weight: 600;

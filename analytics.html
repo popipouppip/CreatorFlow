@@ -69,6 +69,21 @@
           <div class="val" id="s-conv">—</div>
           <div class="sub" data-i18n="sub_found_paid">found → paid</div>
         </div>
+        <div class="stat-card">
+          <label data-i18n="an_pending">Pending Payments</label>
+          <div class="val" id="s-pending">—</div>
+          <div class="sub" data-i18n="sub_pending">agreed + posted</div>
+        </div>
+        <div class="stat-card">
+          <label data-i18n="an_avg_deal">Avg Deal Value</label>
+          <div class="val" id="s-avg-deal">—</div>
+          <div class="sub" data-i18n="sub_avg_deal">per paid deal</div>
+        </div>
+      </div>
+
+      <div class="card" id="best-performer-card" style="display:none;margin-bottom:20px">
+        <div class="card-header"><span class="card-title" data-i18n="an_best_performer">Best Performer</span></div>
+        <div id="best-performer-body"></div>
       </div>
 
       <div class="analytics-grid" style="margin-bottom:20px">
@@ -186,11 +201,42 @@
     const paidTotal = allDeals.filter(d => d.stage === 'paid').length;
     const conv = allDeals.length > 0 ? Math.round((paidTotal / allDeals.length) * 100) + '%' : '—';
 
-    document.getElementById('s-spent').textContent = '$' + totalSpent.toLocaleString();
-    document.getElementById('s-reach').textContent = fmtNum(totalReach);
-    document.getElementById('s-cpm').textContent   = cpm === '—' ? '—' : '$' + cpm;
-    document.getElementById('s-deals').textContent = allDeals.length;
-    document.getElementById('s-conv').textContent  = conv;
+    const pending = allDeals.filter(d => d.stage === 'agreed' || d.stage === 'posted')
+      .reduce((a, d) => a + Number(d.amount||0), 0);
+    const paidDeals = allDeals.filter(d => d.stage === 'paid');
+    const avgDeal = paidDeals.length > 0 ? Math.round(paidDeals.reduce((a,d)=>a+Number(d.amount||0),0) / paidDeals.length) : 0;
+
+    document.getElementById('s-spent').textContent    = '$' + totalSpent.toLocaleString();
+    document.getElementById('s-reach').textContent    = fmtNum(totalReach);
+    document.getElementById('s-cpm').textContent      = cpm === '—' ? '—' : '$' + cpm;
+    document.getElementById('s-deals').textContent    = allDeals.length;
+    document.getElementById('s-conv').textContent     = conv;
+    document.getElementById('s-pending').textContent  = pending > 0 ? '$' + pending.toLocaleString() : '—';
+    document.getElementById('s-avg-deal').textContent = avgDeal > 0 ? '$' + avgDeal.toLocaleString() : '—';
+
+    // Best performer
+    const infMap2 = {};
+    allDeals.forEach(d => {
+      if (!infMap2[d.influencerName]) infMap2[d.influencerName] = { name: d.influencerName, platform: d.platform, reach: 0, spent: 0 };
+      infMap2[d.influencerName].reach += Number(d.reach||0);
+      if (d.stage === 'paid') infMap2[d.influencerName].spent += Number(d.amount||0);
+    });
+    const performers = Object.values(infMap2).filter(i => i.reach > 0);
+    if (performers.length) {
+      performers.sort((a, b) => b.reach - a.reach);
+      const best = performers[0];
+      const bestCpm = best.spent > 0 ? '$' + (best.spent / best.reach * 1000).toFixed(2) : '—';
+      document.getElementById('best-performer-card').style.display = '';
+      document.getElementById('best-performer-body').innerHTML =
+        '<div class="best-performer">' +
+          '<div class="best-performer-name">' + esc(best.name) + '<span class="badge badge-' + best.platform + '" style="margin-left:8px">' + best.platform + '</span></div>' +
+          '<div class="best-performer-stats">' +
+            '<span>👁 ' + fmtNum(best.reach) + ' reach</span>' +
+            (best.spent > 0 ? '<span>💰 $' + best.spent.toLocaleString() + ' spent</span>' : '') +
+            '<span>📊 CPM ' + bestCpm + '</span>' +
+          '</div>' +
+        '</div>';
+    }
 
     const campSpend = cachedCamps.map(c => ({
       name: c.name,

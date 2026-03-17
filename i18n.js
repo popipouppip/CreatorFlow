@@ -330,6 +330,23 @@ const LANGS = {
     err_weak_pass:      'Password must be at least 6 characters.',
     err_too_many:       'Too many attempts. Please try again later.',
     err_generic:        'Something went wrong. Please try again.',
+
+    // account page
+    acc_sub_title:        'Subscription',
+    acc_profile_title:    'Profile',
+    acc_features_title:   "What's included in your plan",
+    acc_active:           'Active subscription',
+    acc_trial_soon:       'Your free trial ends soon. Upgrade to keep access.',
+    acc_trial_expired:    'Trial expired',
+    acc_trial_exp_sub:    'Upgrade to regain access to all features.',
+    acc_upgrade_btn:      'Upgrade plan →',
+    acc_manage_btn:       'Manage billing →',
+    acc_since:            'Member since',
+    acc_loading:          'Loading...',
+    acc_days_left:        '{n} days left',
+    acc_exit_demo:        'Exit Demo',
+    acc_demo_data:        'Demo Data',
+    nav_signout:          'Sign out',
   },
 
   ru: {
@@ -655,6 +672,23 @@ const LANGS = {
     err_weak_pass:      'Пароль должен содержать минимум 6 символов.',
     err_too_many:       'Слишком много попыток. Попробуйте позже.',
     err_generic:        'Что-то пошло не так. Попробуйте ещё раз.',
+
+    // account page
+    acc_sub_title:        'Подписка',
+    acc_profile_title:    'Профиль',
+    acc_features_title:   'Что включено в ваш план',
+    acc_active:           'Активная подписка',
+    acc_trial_soon:       'Пробный период заканчивается. Обновите тариф.',
+    acc_trial_expired:    'Пробный период истёк',
+    acc_trial_exp_sub:    'Обновите тариф для доступа ко всем функциям.',
+    acc_upgrade_btn:      'Обновить план →',
+    acc_manage_btn:       'Управление оплатой →',
+    acc_since:            'Участник с',
+    acc_loading:          'Загрузка...',
+    acc_days_left:        'Осталось {n} дн.',
+    acc_exit_demo:        'Выйти из демо',
+    acc_demo_data:        'Демо данные',
+    nav_signout:          'Выйти',
   }
 };
 

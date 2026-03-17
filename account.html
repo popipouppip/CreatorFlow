@@ -30,7 +30,11 @@
   <main class="main">
     <div class="topbar">
       <h1 data-i18n="nav_account">Account</h1>
-      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data</button>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="handleDemoBtn()" style="color:var(--muted)"><i data-lucide="flask-conical" class="btn-icon-sm"></i> <span data-i18n="acc_demo_data">Demo Data</span></button>
     </div>
     <div class="page-content">
 
@@ -39,11 +43,11 @@
         <!-- Plan card -->
         <div class="card account-card">
           <div class="account-card-header">
-            <span class="account-card-title">Subscription</span>
+            <span class="account-card-title" data-i18n="acc_sub_title">Subscription</span>
             <span class="plan-chip" id="plan-chip">—</span>
           </div>
           <div class="account-plan-info" id="plan-info">
-            <div class="account-loading">Loading...</div>
+            <div class="account-loading" data-i18n="acc_loading">Loading...</div>
           </div>
           <div class="account-card-actions" id="plan-actions"></div>
         </div>
@@ -51,7 +55,7 @@
         <!-- Profile card -->
         <div class="card account-card">
           <div class="account-card-header">
-            <span class="account-card-title">Profile</span>
+            <span class="account-card-title" data-i18n="acc_profile_title">Profile</span>
           </div>
           <div class="account-profile">
             <div class="account-avatar" id="avatar-initials">—</div>
@@ -67,7 +71,7 @@
       <!-- Plan features -->
       <div class="card" id="features-card" style="display:none">
         <div class="card-header">
-          <span class="card-title">What's included in your plan</span>
+          <span class="card-title" data-i18n="acc_features_title">What's included in your plan</span>
         </div>
         <div class="account-features" id="plan-features"></div>
       </div>
@@ -85,32 +89,38 @@
 <script src="firebase-config.js"></script>
 <script src="trial.js"></script>
 <script>
-const PLAN_FEATURES = {
-  free: [
-    '✓ 1 campaign',
-    '✓ Up to 10 influencers',
-    '✓ Basic deal pipeline',
-    '✗ Analytics (Pro+)',
-    '✗ CSV export (Pro+)',
-    '✗ Unlimited outreach templates (Pro+)',
-  ],
-  pro: [
-    '✓ Up to 10 campaigns',
-    '✓ Up to 100 influencers',
-    '✓ Full analytics + CSV export',
-    '✓ Unlimited outreach templates',
-    '✓ Drag & drop deals',
-    '✓ Priority support',
-  ],
-  agency: [
-    '✓ Unlimited campaigns',
-    '✓ Unlimited influencers',
-    '✓ Full analytics + CSV export',
-    '✓ Up to 5 team members',
-    '✓ White-label reports',
-    '✓ Dedicated support',
-  ],
-};
+function getPlanFeatures(plan) {
+  const f = {
+    free: [
+      { ok: true,  en: '1 campaign',                        ru: '1 кампания' },
+      { ok: true,  en: 'Up to 10 influencers',              ru: 'До 10 инфлюенсеров' },
+      { ok: true,  en: 'Basic deal pipeline',               ru: 'Базовая воронка сделок' },
+      { ok: false, en: 'Analytics (Pro+)',                   ru: 'Аналитика (Pro+)' },
+      { ok: false, en: 'CSV export (Pro+)',                  ru: 'Экспорт CSV (Pro+)' },
+      { ok: false, en: 'Unlimited outreach templates (Pro+)',ru: 'Безлимитные шаблоны (Pro+)' },
+    ],
+    pro: [
+      { ok: true, en: 'Up to 10 campaigns',              ru: 'До 10 кампаний' },
+      { ok: true, en: 'Up to 100 influencers',           ru: 'До 100 инфлюенсеров' },
+      { ok: true, en: 'Full analytics + CSV export',     ru: 'Полная аналитика + CSV' },
+      { ok: true, en: 'Unlimited outreach templates',    ru: 'Безлимитные шаблоны' },
+      { ok: true, en: 'Drag & drop deals',               ru: 'Drag & drop сделок' },
+      { ok: true, en: 'Priority support',                ru: 'Приоритетная поддержка' },
+    ],
+    agency: [
+      { ok: true, en: 'Unlimited campaigns',             ru: 'Безлимитные кампании' },
+      { ok: true, en: 'Unlimited influencers',           ru: 'Безлимитные инфлюенсеры' },
+      { ok: true, en: 'Full analytics + CSV export',     ru: 'Полная аналитика + CSV' },
+      { ok: true, en: 'Up to 5 team members',            ru: 'До 5 участников команды' },
+      { ok: true, en: 'White-label reports',             ru: 'White-label отчёты' },
+      { ok: true, en: 'Dedicated support',               ru: 'Персональная поддержка' },
+    ],
+  };
+  return (f[plan] || f.free).map(item => ({
+    text: (currentLang === 'ru' ? item.ru : item.en),
+    ok: item.ok
+  }));
+}
 
 if (!localStorage.getItem('cfUid')) location.href = 'index.html';
 
@@ -121,7 +131,7 @@ auth.onAuthStateChanged(user => {
   const initials = user.email.slice(0, 2).toUpperCase();
   document.getElementById('avatar-initials').textContent = initials;
   const demoBtn = document.getElementById('demo-toggle-btn');
-  if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? '<i data-lucide="x-circle" class="btn-icon-sm"></i> Exit Demo' : '<i data-lucide="flask-conical" class="btn-icon-sm"></i> Demo Data'; if(window.lucide) lucide.createIcons(); }
+  if (demoBtn) { demoBtn.innerHTML = isDemoMode() ? `<i data-lucide="x-circle" class="btn-icon-sm"></i> ${t('acc_exit_demo')}` : `<i data-lucide="flask-conical" class="btn-icon-sm"></i> ${t('acc_demo_data')}`; if(window.lucide) lucide.createIcons(); }
 
   db.collection('users').doc(user.uid).onSnapshot(snap => {
     const data = snap.data() || {};
@@ -143,37 +153,37 @@ auth.onAuthStateChanged(user => {
       if (trial.trial) {
         const color = trial.daysLeft <= 3 ? '#dc2626' : '#ca8a04';
         info.innerHTML = `<div class="account-trial-info" style="border-color:${color}20;background:${color}08">
-          <div class="account-trial-days" style="color:${color}">${trial.daysLeft} days left</div>
-          <div class="account-trial-sub">Your free trial ends soon. Upgrade to keep access.</div>
+          <div class="account-trial-days" style="color:${color}">${t('acc_days_left', {n: trial.daysLeft})}</div>
+          <div class="account-trial-sub">${t('acc_trial_soon')}</div>
         </div>`;
       } else {
-        info.innerHTML = '<div class="account-trial-info" style="border-color:#dc262620;background:#dc262608"><div class="account-trial-days" style="color:#dc2626">Trial expired</div><div class="account-trial-sub">Upgrade to regain access to all features.</div></div>';
+        info.innerHTML = `<div class="account-trial-info" style="border-color:#dc262620;background:#dc262608"><div class="account-trial-days" style="color:#dc2626">${t('acc_trial_expired')}</div><div class="account-trial-sub">${t('acc_trial_exp_sub')}</div></div>`;
       }
     } else {
-      info.innerHTML = `<div class="account-active-plan"><div class="account-active-dot"></div><span>Active subscription</span></div>`;
+      info.innerHTML = `<div class="account-active-plan"><div class="account-active-dot"></div><span>${t('acc_active')}</span></div>`;
     }
 
     // Actions
     const actions = document.getElementById('plan-actions');
     if (plan === 'free') {
       actions.innerHTML = `
-        <button class="btn btn-primary" onclick="openUpgradeModal()">Upgrade plan →</button>`;
+        <button class="btn btn-primary" onclick="openUpgradeModal()">${t('acc_upgrade_btn')}</button>`;
     } else {
-      actions.innerHTML = `<button class="btn btn-secondary" onclick="openPortal()">Manage billing →</button>`;
+      actions.innerHTML = `<button class="btn btn-secondary" onclick="openPortal()">${t('acc_manage_btn')}</button>`;
     }
 
     // Features
     const featCard = document.getElementById('features-card');
     featCard.style.display = 'block';
-    const features = PLAN_FEATURES[plan] || PLAN_FEATURES.free;
+    const features = getPlanFeatures(plan);
     document.getElementById('plan-features').innerHTML = features.map(f =>
-      `<div class="account-feature-item ${f.startsWith('✗') ? 'locked' : ''}">${f}</div>`
+      `<div class="account-feature-item ${f.ok ? '' : 'locked'}">${f.ok ? '✓' : '✗'} ${f.text}</div>`
     ).join('');
 
     // Since
     if (data.createdAt) {
       const d = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-      document.getElementById('profile-since').textContent = 'Member since ' + d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      document.getElementById('profile-since').textContent = t('acc_since') + ' ' + d.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' });
     }
 
     const upgradeBtn = document.getElementById('upgrade-btn');
@@ -185,7 +195,7 @@ async function openPortal() {
   const user = auth.currentUser;
   if (!user) return;
   const btn = document.querySelector('[onclick="openPortal()"]');
-  if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+  if (btn) { btn.disabled = true; btn.textContent = t('acc_loading'); }
   try {
     const res = await fetch('/api/customer-portal', {
       method: 'POST',
@@ -198,7 +208,7 @@ async function openPortal() {
   } catch (e) {
     alert('Something went wrong');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Manage billing →'; }
+    if (btn) { btn.disabled = false; btn.textContent = t('acc_manage_btn'); }
   }
 }
 
